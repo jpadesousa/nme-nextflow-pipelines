@@ -1,0 +1,9 @@
+name	GRCh38
+species	Human
+fasta	${GENOMES}/Homo_sapiens/GRCh38/
+bismark	${GENOMES}/Homo_sapiens/GRCh38/
+bowtie	${GENOMES}/Homo_sapiens/GRCh38/Homo_sapiens.GRCh38
+bowtie2	${GENOMES}/Homo_sapiens/GRCh38/Homo_sapiens.GRCh38
+hisat2	${GENOMES}/Homo_sapiens/GRCh38/Homo_sapiens.GRCh38
+gtf	${GENOMES}/Homo_sapiens/GRCh38/Homo_sapiens.GRCh38.99.gtf
+hisat2_splices	${GENOMES}/Homo_sapiens/GRCh38/Homo_sapiens.GRCh38.99-hisat2_splice_sites.txt

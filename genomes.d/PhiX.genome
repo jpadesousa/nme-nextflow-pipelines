@@ -1,0 +1,7 @@
+name	PhiX
+species	PhiX
+fasta	${GENOMES}/PhiX
+bismark	${GENOMES}/PhiX
+bowtie	${GENOMES}/PhiX/phi_plus_SNPs
+bowtie2	${GENOMES}/PhiX/phi_plus_SNPs
+hisat2	${GENOMES}/PhiX/phi_plus_SNPs

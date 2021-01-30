@@ -1,0 +1,7 @@
+me	BDGP6
+species	Drosophila_melanogaster
+fasta	${GENOMES}/Drosophila_melanogaster/BDGP6
+bismark	${GENOMES}/Drosophila_melanogaster/BDGP6
+bowtie	${GENOMES}/Drosophila_melanogaster/BDGP6/Drosophila_melanogaster.BDGP6
+bowtie2	${GENOMES}/Drosophila_melanogaster/BDGP6/Drosophila_melanogaster.BDGP6
+hisat2	${GENOMES}/Drosophila_melanogaster/BDGP6/Drosophila_melanogaster.BDGP6

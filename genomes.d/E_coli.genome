@@ -1,0 +1,7 @@
+name	E_coli
+species	Escherichia_coli
+fasta	${GENOMES}/Escherichia_coli
+bismark	${GENOMES}/Escherichia_coli
+bowtie	${GENOMES}/Escherichia_coli/Ecoli
+bowtie2	${GENOMES}/Escherichia_coli/Ecoli
+hisat2	${GENOMES}/Escherichia_coli/Ecoli

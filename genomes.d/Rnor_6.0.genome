@@ -1,0 +1,9 @@
+name	Rnor_6.0
+species	Rattus_norvegicus
+fasta	${GENOMES}/Rattus_norvegicus/Rnor_6.0
+bismark	${GENOMES}/Rattus_norvegicus/Rnor_6.0
+bowtie	${GENOMES}/Rattus_norvegicus/Rnor_6.0/Rattus_norvegicus.Rnor_6.0
+bowtie2	${GENOMES}/Rattus_norvegicus/Rnor_6.0/Rattus_norvegicus.Rnor_6.0
+hisat2	${GENOMES}/Rattus_norvegicus/Rnor_6.0/Rattus_norvegicus.Rnor_6.0
+gtf	${GENOMES}/Rattus_norvegicus/Rnor_6.0/Rattus_norvegicus.Rnor_6.0.92.gtf
+hisat2_splices		${GENOMES}/Rattus_norvegicus/Rnor_6.0/Rattus_norvegicus.Rnor_6.0.92.hisat2_splices.txt

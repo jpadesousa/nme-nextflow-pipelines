@@ -1,0 +1,7 @@
+name	TAIR10
+species	Arabidopsis_thaliana
+fasta	${GENOMES}/Arabidopsis_thaliana/TAIR10
+bismark	${GENOMES}/Arabidopsis_thaliana/TAIR10
+bowtie	${GENOMES}/Arabidopsis_thaliana/TAIR10/Arabidopsis_thaliana.TAIR10
+bowtie2	${GENOMES}/Arabidopsis_thaliana/TAIR10/Arabidopsis_thaliana.TAIR10
+hisat2	${GENOMES}/Arabidopsis_thaliana/TAIR10/Arabidopsis_thaliana.TAIR10

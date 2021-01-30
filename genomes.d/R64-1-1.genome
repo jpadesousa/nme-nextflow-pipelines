@@ -1,0 +1,7 @@
+name	R64-1-1
+species	Saccharomyces_cerevisiae
+fasta	${GENOMES}/Saccharomyces_cerevisiae/R64-1-1
+bismark	${GENOMES}/Saccharomyces_cerevisiae/R64-1-1
+bowtie	${GENOMES}/Saccharomyces_cerevisiae/R64-1-1/Saccharomyces_cerevisiae.R64-1-1
+bowtie2	${GENOMES}/Saccharomyces_cerevisiae/R64-1-1/Saccharomyces_cerevisiae.R64-1-1
+hisat2	${GENOMES}/Saccharomyces_cerevisiae/R64-1-1/Saccharomyces_cerevisiae.R64-1-1

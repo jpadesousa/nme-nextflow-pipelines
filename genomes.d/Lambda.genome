@@ -1,0 +1,7 @@
+name	Lambda
+species	Bacteriophage_lambda
+fasta	${GENOMES}/Bacteriophage_lambda
+bismark	${GENOMES}/Bacteriophage_lambda
+bowtie	${GENOMES}/Bacteriophage_lambda/Lambda
+bowtie2	${GENOMES}/Bacteriophage_lambda/Lambda
+hisat2	${GENOMES}/Bacteriophage_lambda/Lambda
