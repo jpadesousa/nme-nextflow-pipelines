@@ -3,8 +3,8 @@ nextflow.enable.dsl=2
 
 // params.single_end = false
 
-def makeFilesChannel(fileList) {    
-    
+def makeFilesChannel(fileList) {
+
     file_ch = Channel.fromFilePairs(getFileBaseNames(fileList),size:-1)
 
     return(file_ch)
@@ -17,7 +17,7 @@ def getFileBaseNames(fileList) {
     bareFiles = []
 
     for (String s : fileList) {
-       
+
         if (params.single_end){
             matcher = s =~ /^(.*).(fastq|fq).gz$/
 
@@ -51,7 +51,7 @@ def getFileBaseNames(fileList) {
                         bareFiles.add(matcher[0][1])
                     }
                 }
-            
+
             }
             else{ // not Trim Galore processed
                 matcher = s =~ /^(.*)_(R?[1234]).(fastq|fq).gz$/

@@ -9,39 +9,38 @@ params.three_prime_clip_R1 = ''
 params.three_prime_clip_R2 = ''
 
 
-process TRIM_GALORE {	
-    
-	tag "$name"                         // Adds name to job submission instead of (1), (2) etc.
+process TRIM_GALORE {
 
-	label 'trimGalore'
-    
+	label 'trimGalore' // Defined in nextflow.config
+
+	tag "$name" // Adds name to job submission instead of (1), (2) etc.
+
 	input:
-	    tuple val (name), path (reads)
+		tuple val (name), path (reads)
 		val (outputdir)
 		val (trim_galore_args)
 		val (verbose)
 
 	output:
-	    tuple val(name), path ("*fq.gz"), emit: reads
+		tuple val(name), path ("*fq.gz"), emit: reads
 		path "*trimming_report.txt", optional: true, emit: report
-		
-	publishDir "$outputdir",
+
+		publishDir "$outputdir",
 		mode: "link", overwrite: true
 
-
-    script:
+	script:
 		if (verbose){
 			println ("[MODULE] TRIM GALORE ARGS: " + trim_galore_args)
 		}
-		
+
 		pairedString = ""
 		if (reads instanceof List) {
 			pairedString = "--paired"
 		}
-		
-		// Specialised Epigenetic Clock Processing		
+
+		// Specialised Epigenetic Clock Processing
 		if (params.clock){
-			trim_galore_args += " --breitling "	
+			trim_galore_args += " --breitling "
 		}
 		else{
 			if (params.singlecell){
@@ -54,7 +53,7 @@ process TRIM_GALORE {
 			if (params.rrbs){
 				trim_galore_args = trim_galore_args + " --rrbs "
 			}
-			
+
 			if  (params.pbat){
 				trim_galore_args = trim_galore_args + " --clip_r1 $params.pbat "
 				if (pairedString == "--paired"){
@@ -73,5 +72,4 @@ process TRIM_GALORE {
 		module load fastqc
 		trim_galore -j 4 $trim_galore_args ${pairedString} ${reads}
 		"""
-
 }

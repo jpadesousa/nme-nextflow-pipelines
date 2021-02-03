@@ -9,26 +9,27 @@ params.nome       = false
 genome = params.genome["bismark"]
 
 process COVERAGE2CYTOSINE {
+
+	label 'coverage2Cytosine' // Defined in nextflow.config
+
 	tag "$coverage_file" // Adds name to job submission instead of (1), (2) etc.
 
-	label 'coverage2Cytosine'
-
-    input:
-	    path(coverage_file)
+	input:
+		path(coverage_file)
 		val (outputdir)
 		val (coverage2cytosine_args)
 		val (verbose)
 
 	output:
-	    path "*{report.txt.gz,report.txt}", emit: report
+		path "*{report.txt.gz,report.txt}", emit: report
 		path "*{.cov.gz,.cov}",             emit: coverage
-	
-	publishDir "$outputdir",
+
+		publishDir "$outputdir",
 		mode: "link", overwrite: true
-    
+
 	script:
-		
-		// removing the file extension from the input file name 
+
+		// removing the file extension from the input file name
 		// (https://www.nextflow.io/docs/latest/script.html#removing-part-of-a-string)
 		outfile_basename = coverage_file.toString()  // Important to convert nextflow.processor.TaskPath object to String first
 		outfile_basename = (outfile_basename - ~/.bismark.cov.gz$/)
@@ -42,7 +43,7 @@ process COVERAGE2CYTOSINE {
 
 		// Options we add are
 		cov2cyt_options = coverage2cytosine_args + " --gzip "
-		
+
 		if (params.nome){
 			if (verbose){
 				println ("NOMe-seq outfile basename: $outfile_basename")
@@ -50,7 +51,7 @@ process COVERAGE2CYTOSINE {
 			cov2cyt_options += " --nome"
 		}
 
-		
+
 		if (verbose){
 			println ("Now running command: coverage2cytosine --genome $genome $cov2cyt_options --output ${outfile_basename} $coverage_file ")
 		}
@@ -59,6 +60,4 @@ process COVERAGE2CYTOSINE {
 		module load bismark
 		coverage2cytosine --genome $genome $cov2cyt_options --output ${outfile_basename} $coverage_file
 		"""
-		
-		
 }

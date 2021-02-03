@@ -1,13 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// NME
-// Last modified on 06 January 2021
-
-params.outdir = "."
+params.outdir            = "."
 params.fastq_screen_args = ''
-params.verbose = false
-params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically  
+params.verbose           = false
+params.single_end        = false  // default mode is auto-detect. NOTE: params are handed over automatically  
 
 if (params.verbose){
     println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: " + params.fastq_screen_args)
@@ -54,8 +51,9 @@ def helpMessage() {
  
     log.info"""
     >>
-
     
+    SYNOPSIS:
+
     This workflow takes in a list of filenames in FastQ format, and runs FastQ Screen on these files on the Babraham Stone cluster
     against at wide range of standard genomes we use to assess contamination at Babraham.
     

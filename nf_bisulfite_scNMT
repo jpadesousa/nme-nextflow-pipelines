@@ -1,23 +1,21 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// Last modified 14 October 2020
-
-params.outdir = "."
-params.genome = ""
-params.verbose = false
+params.outdir     = "."
+params.genome     = ""
+params.verbose    = false
 params.single_end = false  // default mode is auto-detect. NOTE: params are automatically handed over 
 
-params.fastqc_args = ''
-params.fastq_screen_args = ''
-params.trim_galore_args = ''
-params.bismark_args = ''
-params.deduplicate_bismark_args = ''
+params.fastqc_args                        = ''
+params.fastq_screen_args                  = ''
+params.trim_galore_args                   = ''
+params.bismark_args                       = ''
+params.deduplicate_bismark_args           = ''
 params.bismark_methylation_extractor_args = ''
-params.coverage2cytosine_args = ''
-params.bismark2summary_args = ''
-params.bismark2report_args= ''
-params.multiqc_args = ''
+params.coverage2cytosine_args             = ''
+params.bismark2summary_args               = ''
+params.bismark2report_args                = ''
+params.multiqc_args                       = ''
 
 params.help = false
 // Show help message and exit
@@ -130,7 +128,6 @@ def helpMessage() {
  
     log.info"""
     >>
-
 
     SYNOPSIS:
 

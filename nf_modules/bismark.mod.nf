@@ -2,28 +2,26 @@ nextflow.enable.dsl=2
 
 // parameters passed in by specialised pipelines
 params.singlecell = ''
-params.pbat = false
-
+params.pbat       = false
 
 process BISMARK {
 
+	label 'bismark' // Defined in nextflow.config
+
 	tag "$name" // Adds name to job submission instead of (1), (2) etc.
 
-	label 'bismark'
-	
-    input:
-	    	tuple val(name), path(reads)
+	input:
+		tuple val(name), path(reads)
 		val (outputdir)
 		val (bismark_args)
 		val (verbose)
 
 	output:
-	    path "*bam",        emit: bam
+		path "*bam",        emit: bam
 		path "*report.txt", emit: report
 
-	publishDir "$outputdir",
+		publishDir "$outputdir",
 		mode: "link", overwrite: true
-
 
     script:
 		cores = 1
@@ -39,9 +37,9 @@ process BISMARK {
 			bismark_options += " --non_directional "
 		}
 		else{
-		
+
 		}
-		
+
 		if (params.pbat){
 			bismark_options += " --pbat "
 		}
@@ -68,5 +66,4 @@ process BISMARK {
 		module load bismark
 		bismark --parallel $cores --basename $bismark_name $index $bismark_options $readString
 		"""
-
 }

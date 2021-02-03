@@ -5,16 +5,16 @@ process FASTQC {
 	tag "$name" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
-	    tuple val(name), path(reads)
+	  tuple val(name), path(reads)
 		val (outputdir)
 		val (fastqc_args)
 		val (verbose)
 
 	output:
-	    tuple val(name), path ("*fastqc*"), emit: all
+	  tuple val(name), path ("*fastqc*"), emit: all
 		path "*.zip",  emit: report
-	
-	publishDir "$outputdir",
+
+	  publishDir "$outputdir",
 		mode: "link", overwrite: true
 
 	script:

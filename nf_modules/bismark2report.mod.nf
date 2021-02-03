@@ -1,20 +1,20 @@
 nextflow.enable.dsl=2
 
 process BISMARK2REPORT {
-	
-    input:
-	    file (file)
+
+	input:
+		file (file)
 		val (outputdir)
 		val (bismark2report_args)
 		val (verbose)
 
 	output:
-	    path "*html",       emit: html
-		
-	publishDir "$outputdir",
+		path "*html", emit: html
+
+		publishDir "$outputdir",
 		mode: "link", overwrite: true
 
-    script:
+	script:
 		if (verbose){
 			println ("[MODULE] BISMARK2REPORT ARGS: " + bismark2report_args)
 		}

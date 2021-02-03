@@ -1,14 +1,11 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// NME
-// last modified 06 Jan 2021
-
-params.outdir = "."
-params.genome = ""
+params.outdir       = "."
+params.genome       = ""
 params.bowtie2_args = ''
-params.verbose = false
-params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically 
+params.verbose      = false
+params.single_end   = false  // default mode is auto-detect. NOTE: params are handed over automatically 
 
 params.list_genomes = false;
 
@@ -41,7 +38,6 @@ include { BOWTIE2 } from './nf_modules/bowtie2.mod.nf'   params(genome: genome)
 
 file_ch = makeFilesChannel(args)
 
-
 workflow {
 
     main:
@@ -71,7 +67,6 @@ def helpMessage() {
  
     log.info"""
     >>
-
     
     This workflow takes in a list of filenames (in FastQ format), and aligns these files to a genome using Bowtie 2 on the
     stone compute cluster at Babraham.
@@ -145,4 +140,3 @@ def helpMessage() {
     """.stripIndent()
 
 }
-

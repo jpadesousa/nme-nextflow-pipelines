@@ -1,12 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// Last modified 13 October 2020
-
-params.outdir = "."
-params.verbose = false
+params.outdir           = "."
+params.verbose          = false
 params.trim_galore_args = ''
-params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically 
+params.single_end       = false  // default mode is auto-detect. NOTE: params are handed over automatically 
 
 params.help = false
 // Show help message and exit

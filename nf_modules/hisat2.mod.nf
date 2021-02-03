@@ -1,30 +1,30 @@
 nextflow.enable.dsl=2
 
 process HISAT2 {
-	
+
+	label 'hisat2' // Defined in nextflow.config
+
 	tag "$name" // Adds name to job submission instead of (1), (2) etc.
 
-	label 'hisat2'
-
-    input:
-	    tuple val(name), path(reads)
+	input:
+		tuple val(name), path(reads)
 		val (outputdir)
 		val (hisat2_args)
 		val (verbose)
 
 	output:
-	    path "*bam",       emit: bam
-		path "*stats.txt", emit: stats 
+		path "*bam",       emit: bam
+		path "*stats.txt", emit: stats
 
-	publishDir "$outputdir",
+		publishDir "$outputdir",
 		mode: "link", overwrite: true
 
-    script:
-	
+	script:
+
 		if (verbose){
 			println ("[MODULE] HISAT2 ARGS: " + hisat2_args)
 		}
-	
+
 		cores = 8
 		readString = ""
 		hisat_options = hisat2_args
@@ -40,8 +40,8 @@ process HISAT2 {
 			readString = "-U "+reads
 		}
 		index = params.genome["hisat2"]
-		
-		// TODO: need to add a check if the splice-site infile is present or not, and leave out this parameter otherwise 
+
+		// TODO: need to add a check if the splice-site infile is present or not, and leave out this parameter otherwise
 		splices = " --known-splicesite-infile " + params.genome["hisat2_splices"]
 		hisat_name = name + "_" + params.genome["name"]
 

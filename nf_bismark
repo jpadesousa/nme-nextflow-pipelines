@@ -1,19 +1,16 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// NME Edited
-// last modified 06 Jan 2021
-
-params.outdir = "."
-params.genome = ""
-params.verbose = false
+params.outdir       = "."
+params.genome       = ""
+params.verbose      = false
 params.bismark_args = ''
-params.single_end = false // default mode is auto-detect. NOTE: params are handed over automatically
+params.single_end   = false // default mode is auto-detect. NOTE: params are handed over automatically
 
 params.list_genomes = false;
 
 
-params.help = false
+params.help         = false
 // Show help message and exit
 if (params.help){
     helpMessage()
@@ -146,5 +143,3 @@ def helpMessage() {
     """.stripIndent()
 
 }
-
-

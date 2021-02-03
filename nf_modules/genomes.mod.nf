@@ -1,21 +1,20 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-
 def getGenome(name) {
 
     // Find a file with the same name as the genome in our genomes.d directory
 
     scriptDir = workflow.projectDir
-    
+
     // die gracefully if the user specified an incorrect genome
     def fileName = scriptDir.toString() + "/genomes.d/" + name + ".genome"
     def testFile = new File(fileName)
     if (!testFile.exists()) {
         println("\nFile >>$fileName<< does not exist. Listing available genomes...\n")
         listGenomes()
-    }   
-    else { 
+    }
+    else {
         // println ("File $fileName exists.")
     }
 
@@ -33,20 +32,20 @@ def getGenome(name) {
 }
 
 def listGenomes(){
-    
+
     println ("These genomes are currently available to choose from:")
     println ("=====================================================")
     scriptDir = workflow.projectDir + "/genomes.d/"
     // println (scriptDir) // last slash is consumed
     allFiles = scriptDir.list()
-    
+
     for( def file : allFiles.sort() ) {
-        
+
         if( file =~ /.genome$/){
 
             genomeFH = new File(scriptDir.toString() + "/$file").newInputStream()
             name = file.replaceFirst(/.genome/, "")
-        
+
             println (name)
             genomeFH.eachLine {
                 if (params.verbose){
@@ -59,4 +58,3 @@ def listGenomes(){
 
     System.exit(1)
 }
-

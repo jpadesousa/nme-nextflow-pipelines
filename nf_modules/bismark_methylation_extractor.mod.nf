@@ -7,28 +7,28 @@ params.pbat       = false
 params.nonCG      = false
 
 process BISMARK_METHYLATION_EXTRACTOR {
-	
-	label 'BismarkMethylationExtractor'
-	
+
+	label 'BismarkMethylationExtractor' // Defined in nextflow.config
+
 	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
 
-    input:
-	    	path(bam)
+	input:
+		path(bam)
 		val (outputdir)
 		val (bismark_methylation_extractor_args)
 		val (verbose)
 
 	output:
-	    path "C*",          emit: context_files
+		path "C*",          emit: context_files
 		path "*report.txt", emit: report
 		path "*M-bias.txt", emit: mbias
 		path "*cov.gz",     emit: coverage
-	
-	publishDir "$outputdir",
+
+		publishDir "$outputdir",
 		mode: "link", overwrite: true
-    
+
 	script:
-		
+
 		if (verbose){
 			println ("[MODULE] BISMARK METHYLATION EXTRACTOR ARGS: " + bismark_methylation_extractor_args)
 		}
@@ -37,7 +37,7 @@ process BISMARK_METHYLATION_EXTRACTOR {
 
 		// Options we add are
 		methXtract_options = bismark_methylation_extractor_args + " --gzip "
-		
+
 		if (params.singlecell){
 			// println ("FLAG SINGLE CELL SPECIFIED: PROCESSING ACCORDINGLY")
 		}
@@ -77,7 +77,7 @@ def isPairedEnd(bamfile) {
 	if (params.verbose){
 		println ("Processing file: " + bamfile)
 	}
-	
+
 	if (bamfile =~ /_pe/){
 		if (params.verbose){
 			println ("File is paired-end!")

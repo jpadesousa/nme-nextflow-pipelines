@@ -1,14 +1,12 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// last modified 14 Oct 2020
-
-params.outdir = "."
-params.verbose = false
+params.outdir     = "."
+params.verbose    = false
 params.single_end = false
 
 params.umibam_args = ''
-params.dual = false // params are handed over automatically
+params.dual        = false // params are handed over automatically
 
 params.help = false
 // Show help message and exit
@@ -125,4 +123,3 @@ def helpMessage() {
     """.stripIndent()
 
 }
-

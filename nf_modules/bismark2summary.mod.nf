@@ -1,21 +1,21 @@
 nextflow.enable.dsl=2
 
 process BISMARK2SUMMARY {
-    
+
 	input:
-	    file (file)
+		file (file)
 		val (outputdir)
 		val (bismark2summary_args)
 		val (verbose)
 
 	output:
-	   	path "*html",       emit: html
-		path "*txt",        emit: report 
+		path "*html",       emit: html
+		path "*txt",        emit: report
 
-	publishDir "$outputdir",
+		publishDir "$outputdir",
 		mode: "link", overwrite: true
 
-    script:
+	script:
 		// We need to replace single quotes in the arguments so that they are not getting passed in as a single string
 		// This is only a temporary workaround until Paolo has fixed the Nextflow bug.
 		// https://github.com/nextflow-io/nextflow/issues/1519
@@ -28,5 +28,4 @@ process BISMARK2SUMMARY {
 		module load bismark
 		bismark2summary
 		"""
-
 }

@@ -1,28 +1,29 @@
 nextflow.enable.dsl=2
-params.bisulfite = ''
+
+params.bisulfite  = ''
 params.single_end = false
 
 process FASTQ_SCREEN {
-	
-	tag "$name" // Adds name to job submission instead of (1), (2) etc.
 
-	label 'fastqScreen'  
-  	
-    input:
-	    tuple val(name), path(reads)
+	label 'fastqScreen' // Defined in nextflow.config
+
+	tag "$name" // Adds name to job submission instead of (1), (2) etc.
+	
+	input:
+		tuple val(name), path(reads)
 		val (outputdir)
 		val (fastq_screen_args)
 		val (verbose)
 
 	output:
-	    //path "*png",  emit: png
-	    path "*html", emit: html
-	    path "*txt",  emit: report
+	  //path "*png",  emit: png
+	  path "*html", emit: html
+	  path "*txt",  emit: report
 
-	publishDir "$outputdir",
+	  publishDir "$outputdir",
 		mode: "link", overwrite: true
 
-    script:
+	script:
 
 		if (verbose){
 			println ("[MODULE] FASTQ SCREEN ARGS: "+ fastq_screen_args)
@@ -36,11 +37,10 @@ process FASTQ_SCREEN {
 			if (reads instanceof List) {
 				reads = reads[0]
 			}
-		}	
+		}
 
-	"""
-	module load fastq-screen
-	fastq_screen $params.bisulfite $fastq_screen_args $reads
-	"""
-
+		"""
+		module load fastq-screen
+		fastq_screen $params.bisulfite $fastq_screen_args $reads
+		"""
 }

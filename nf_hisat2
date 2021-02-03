@@ -1,13 +1,11 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// last modified 12 Oct 2020
-
-params.outdir = "."
-params.genome = ""
-params.verbose = false
-params.hisat2_args = ''
-params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically
+params.outdir       = "."
+params.genome       = ""
+params.verbose      = false
+params.hisat2_args  = ''
+params.single_end   = false  // default mode is auto-detect. NOTE: params are handed over automatically
 
 params.list_genomes = false;
 if (params.list_genomes){
@@ -145,4 +143,3 @@ def helpMessage() {
     """.stripIndent()
 
 }
-
