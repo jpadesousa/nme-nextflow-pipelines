@@ -1,6 +1,4 @@
 #!/usr/bin/env nextflow
-
-// Enable modules
 nextflow.enable.dsl=2
 
 params.outdir     = "."
@@ -8,11 +6,14 @@ params.genome     = ""
 params.verbose    = false
 params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically
 
-params.fastqc_args       = ''
-params.fastq_screen_args = ''
-params.trim_galore_args  = ''
-params.bowtie2_args      = ''
-params.multiqc_args      = ''
+params.fastqc_args             = ''
+params.fastq_screen_args       = ''
+params.trim_galore_args        = ''
+params.bowtie2_args            = ''
+params.multiqc_args            = ''
+params.samtools_sort_args      = ''
+params.samtools_index_args     = ''
+params.bedtools_genomecov_args = ''
 
 params.help = false
 // Show help message and exit
@@ -27,11 +28,13 @@ if (params.list_genomes){
 }
 
 if (params.verbose){
-    println ("[WORKFLOW] FASTQC ARGS: "           + params.fastqc_args)
-    println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: " + params.fastq_screen_args)
-    println ("[WORKFLOW] TRIM GALORE ARGS: "      + params.trim_galore_args)
-    println ("[WORKFLOW] BOWTIE2 ARGS: "          + params.bowtie2_args)
-    println ("[WORKFLOW] MULTIQC ARGS: "          + params.multiqc_args)
+    println ("[WORKFLOW] FASTQC ARGS: "                + params.fastqc_args)
+    println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: "      + params.fastq_screen_args)
+    println ("[WORKFLOW] TRIM GALORE ARGS: "           + params.trim_galore_args)
+    println ("[WORKFLOW] BOWTIE2 ARGS: "               + params.bowtie2_args)
+    println ("[WORKFLOW] SAMTOOLS SORT ARGS: "         + params.samtools_sort_args)
+    println ("[WORKFLOW] BEDTOOLS GENOMECOV ARGS: "    + params.bedtools_genomecov_args)
+    println ("[WORKFLOW] MULTIQC ARGS: "               + params.multiqc_args)
 }
 
 
@@ -49,6 +52,8 @@ include { FASTQC as FASTQC2 } from './nf_modules/fastqc.mod.nf'
 include { FASTQ_SCREEN }      from './nf_modules/fastq_screen.mod.nf'
 include { TRIM_GALORE }       from './nf_modules/trim_galore.mod.nf'
 include { BOWTIE2 }           from './nf_modules/bowtie2.mod.nf'   params(genome: genome, cutntag: true)
+include { SAMTOOLS_SORT}      from './nf_modules/samtools.mod.nf'
+include { BEDTOOLS_GENOMECOV} from './nf_modules/bedtools.mod.nf' params(cutntag: true)
 include { MULTIQC }           from './nf_modules/multiqc.mod.nf'
 
 file_ch = makeFilesChannel(args)
@@ -56,11 +61,13 @@ file_ch = makeFilesChannel(args)
 workflow {
 
     main:
-        FASTQC          (file_ch, params.outdir, params.fastqc_args, params.verbose)
-        FASTQ_SCREEN    (file_ch, params.outdir, params.fastq_screen_args, params.verbose)
-        TRIM_GALORE     (file_ch, params.outdir, params.trim_galore_args, params.verbose)
-        FASTQC2         (TRIM_GALORE.out.reads, params.outdir, params.fastqc_args, params.verbose)
-        BOWTIE2         (TRIM_GALORE.out.reads, params.outdir, params.bowtie2_args, params.verbose)
+        FASTQC               (file_ch, params.outdir, params.fastqc_args, params.verbose)
+        FASTQ_SCREEN         (file_ch, params.outdir, params.fastq_screen_args, params.verbose)
+        TRIM_GALORE          (file_ch, params.outdir, params.trim_galore_args, params.verbose)
+        FASTQC2              (TRIM_GALORE.out.reads, params.outdir, params.fastqc_args, params.verbose)
+        BOWTIE2              (TRIM_GALORE.out.reads, params.outdir, params.bowtie2_args, params.verbose)
+        SAMTOOLS_SORT        (BOWTIE2.out.bam, params.outdir, params.samtools_sort_args, params.verbose)
+        BEDTOOLS_GENOMECOV   (SAMTOOLS_SORT.out.bam, params.outdir, params.bedtools_genomecov_args, params.verbose)
 
         // merging channels for MultiQC
         multiqc_ch = FASTQC.out.report.mix(
@@ -175,6 +182,12 @@ def helpMessage() {
                                       to the Bowtie 2 User Guide, or run 'bowtie2 --help' on the command line. As an example, to
                                       run somewhat more stringent alignments for only 1 million sequences, use:
                                       ' --bowtie2_args="-u 1000000 --score_min L,0,-0.4" '. [Default: None]
+
+
+      --samtools_sort_args="[str]"    This option can take any number of options that are compatible with 'samtools sort' to modify its default
+                                      behaviour. For more detailed information on available options please refer to the Samtools documentation,
+                                      or run 'samtools sort' on the command line. Please note that the format ="your options" needs to be
+                                      strictly adhered to in order to work correctly. [Default: None]
 
     Other options:
     ==============
