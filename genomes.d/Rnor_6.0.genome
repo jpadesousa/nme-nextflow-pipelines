@@ -1,9 +1,11 @@
-name	Rnor_6.0
-species	Rattus_norvegicus
-fasta	${GENOMES}/Rattus_norvegicus/Rnor_6.0
-bismark	${GENOMES}/Rattus_norvegicus/Rnor_6.0
-bowtie	${GENOMES}/Rattus_norvegicus/Rnor_6.0/Rattus_norvegicus.Rnor_6.0
-bowtie2	${GENOMES}/Rattus_norvegicus/Rnor_6.0/Rattus_norvegicus.Rnor_6.0
-hisat2	${GENOMES}/Rattus_norvegicus/Rnor_6.0/Rattus_norvegicus.Rnor_6.0
-gtf	${GENOMES}/Rattus_norvegicus/Rnor_6.0/Rattus_norvegicus.Rnor_6.0.92.gtf
-hisat2_splices		${GENOMES}/Rattus_norvegicus/Rnor_6.0/Rattus_norvegicus.Rnor_6.0.92.hisat2_splices.txt
+name	        Rnor_6.0
+species	        Rattus_norvegicus
+fasta           ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Sequence/WholeGenomeFasta/
+bismark         ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Sequence/BismarkIndex/genome
+bowtie	        ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Sequence/BowtieIndex/genome
+bowtie2	        ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Sequence/Bowtie2Index/genome
+star            ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Sequence/STARIndex/genome
+bwa             ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Sequence/BWAIndex/genome
+hisat2	        
+hisat2_splices	
+gtf	            ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Annotation/Genes/genes.gtf

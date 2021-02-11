@@ -1,9 +1,11 @@
-name	GRCh37
-species	Human
-fasta	${GENOMES}/Homo_sapiens/Human/GRCh37/
-bismark	${GENOMES}/Homo_sapiens/Human/GRCh37/
-bowtie	${GENOMES}/Homo_sapiens/Human/GRCh37/Homo_sapiens.GRCh37
-bowtie2	${GENOMES}/Homo_sapiens/Human/GRCh37/Homo_sapiens.GRCh37
-hisat2	${GENOMES}/Homo_sapiens/Human/GRCh37/Homo_sapiens.GRCh37
-gtf	${GENOMES}/Homo_sapiens/Human/GRCh37/Homo_sapiens.GRCh37.87.gtf
-hisat2_splices	${GENOMES}/Homo_sapiens/Human/GRCh37/Homo_sapiens.GRCh37.87.hisat2_splices.txt
+name            GRCh37
+species         Human
+fasta           ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/WholeGenomeFasta/
+bismark         ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/BismarkIndex/genome
+bowtie	        ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/BowtieIndex/genome
+bowtie2	        ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/Bowtie2Index/genome
+star            ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/STARIndex/genome
+bwa             ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/BWAIndex/genome
+hisat2	        
+hisat2_splices	
+gtf	            ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Annotation/Genes/genes.gtf

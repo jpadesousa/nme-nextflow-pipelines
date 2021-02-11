@@ -1,7 +1,11 @@
-name	TAIR10
-species	Arabidopsis_thaliana
-fasta	${GENOMES}/Arabidopsis_thaliana/TAIR10
-bismark	${GENOMES}/Arabidopsis_thaliana/TAIR10
-bowtie	${GENOMES}/Arabidopsis_thaliana/TAIR10/Arabidopsis_thaliana.TAIR10
-bowtie2	${GENOMES}/Arabidopsis_thaliana/TAIR10/Arabidopsis_thaliana.TAIR10
-hisat2	${GENOMES}/Arabidopsis_thaliana/TAIR10/Arabidopsis_thaliana.TAIR10
+name	        TAIR10
+species	        Arabidopsis_thaliana
+fasta           ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Sequence/WholeGenomeFasta/
+bismark         ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Sequence/BismarkIndex/genome
+bowtie	        ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Sequence/BowtieIndex/genome
+bowtie2	        ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Sequence/Bowtie2Index/genome
+star            ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Sequence/STARIndex/genome
+bwa             ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Sequence/BWAIndex/genome
+hisat2	        
+hisat2_splices	
+gtf	            ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Annotation/Genes/genes.gtf

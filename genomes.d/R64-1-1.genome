@@ -1,7 +1,11 @@
-name	R64-1-1
-species	Saccharomyces_cerevisiae
-fasta	${GENOMES}/Saccharomyces_cerevisiae/R64-1-1
-bismark	${GENOMES}/Saccharomyces_cerevisiae/R64-1-1
-bowtie	${GENOMES}/Saccharomyces_cerevisiae/R64-1-1/Saccharomyces_cerevisiae.R64-1-1
-bowtie2	${GENOMES}/Saccharomyces_cerevisiae/R64-1-1/Saccharomyces_cerevisiae.R64-1-1
-hisat2	${GENOMES}/Saccharomyces_cerevisiae/R64-1-1/Saccharomyces_cerevisiae.R64-1-1
+name	        R64-1-1
+species	        Saccharomyces_cerevisiae
+fasta           ${GENOMES}/Saccharomyces_cerevisiae/Ensembl/R64-1-1/Sequence/WholeGenomeFasta/
+bismark         ${GENOMES}/Saccharomyces_cerevisiae/Ensembl/R64-1-1/Sequence/BismarkIndex/genome
+bowtie	        ${GENOMES}/Saccharomyces_cerevisiae/Ensembl/R64-1-1/Sequence/BowtieIndex/genome
+bowtie2	        ${GENOMES}/Saccharomyces_cerevisiae/Ensembl/R64-1-1/Sequence/Bowtie2Index/genome
+star            ${GENOMES}/Saccharomyces_cerevisiae/Ensembl/R64-1-1/Sequence/STARIndex/genome
+bwa             ${GENOMES}/Saccharomyces_cerevisiae/Ensembl/R64-1-1/Sequence/BWAIndex/genome
+hisat2	        
+hisat2_splices	
+gtf	            ${GENOMES}/Saccharomyces_cerevisiae/Ensembl/R64-1-1/Annotation/Genes/genes.gtf

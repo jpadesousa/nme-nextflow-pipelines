@@ -1,7 +1,11 @@
-me	BDGP6
-species	Drosophila_melanogaster
-fasta	${GENOMES}/Drosophila_melanogaster/BDGP6
-bismark	${GENOMES}/Drosophila_melanogaster/BDGP6
-bowtie	${GENOMES}/Drosophila_melanogaster/BDGP6/Drosophila_melanogaster.BDGP6
-bowtie2	${GENOMES}/Drosophila_melanogaster/BDGP6/Drosophila_melanogaster.BDGP6
-hisat2	${GENOMES}/Drosophila_melanogaster/BDGP6/Drosophila_melanogaster.BDGP6
+name	        BDGP6
+species	        Drosophila_melanogaster
+fasta           ${GENOMES}/Drosophila_melanogaster/Ensembl/BDGP6/Sequence/WholeGenomeFasta/
+bismark         ${GENOMES}/Drosophila_melanogaster/Ensembl/BDGP6/Sequence/BismarkIndex/genome
+bowtie	        ${GENOMES}/Drosophila_melanogaster/Ensembl/BDGP6/Sequence/BowtieIndex/genome
+bowtie2	        ${GENOMES}/Drosophila_melanogaster/Ensembl/BDGP6/Sequence/Bowtie2Index/genome
+star            ${GENOMES}/Drosophila_melanogaster/Ensembl/BDGP6/Sequence/STARIndex/genome
+bwa             ${GENOMES}/Drosophila_melanogaster/Ensembl/BDGP6/Sequence/BWAIndex/genome
+hisat2	        
+hisat2_splices	
+gtf	            ${GENOMES}/Drosophila_melanogaster/Ensembl/BDGP6/Annotation/Genes/genes.gtf

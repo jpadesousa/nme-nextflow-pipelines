@@ -1,7 +1,11 @@
-me	WBcel235
-species	Caenorhabditis_elegans
-fasta	${GENOMES}/Caenorhabditis_elegans/WBcel235
-bismark	${GENOMES}/Caenorhabditis_elegans/WBcel235
-bowtie	${GENOMES}/Caenorhabditis_elegans/WBcel235/Caenorhabditis_elegans.WBcel235
-bowtie2	${GENOMES}/Caenorhabditis_elegans/WBcel235/Caenorhabditis_elegans.WBcel235
-hisat2	${GENOMES}/Caenorhabditis_elegans/WBcel235/Caenorhabditis_elegans.WBcel235
+name            WBcel235
+species         Caenorhabditis_elegans
+fasta           ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/WholeGenomeFasta/
+bismark         ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/BismarkIndex/genome
+bowtie	        ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/BowtieIndex/genome
+bowtie2	        ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/Bowtie2Index/genome
+star            ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/STARIndex/genome
+bwa             ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/BWAIndex/genome
+hisat2	        
+hisat2_splices	
+gtf	            ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/genes.gtf

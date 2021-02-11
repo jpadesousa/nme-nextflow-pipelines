@@ -1,7 +1,11 @@
-name	Lambda
-species	Bacteriophage_lambda
-fasta	${GENOMES}/Bacteriophage_lambda
-bismark	${GENOMES}/Bacteriophage_lambda
-bowtie	${GENOMES}/Bacteriophage_lambda/Lambda
-bowtie2	${GENOMES}/Bacteriophage_lambda/Lambda
-hisat2	${GENOMES}/Bacteriophage_lambda/Lambda
+name            Lambda
+species         Bacteriophage_lambda
+fasta           ${GENOMES}/Bacteriophage_lambda/Pacbio/NEB3011/Sequence/WholeGenomeFasta/
+bismark         ${GENOMES}/Bacteriophage_lambda/Pacbio/NEB3011/Sequence/BismarkIndex/genome
+bowtie	        ${GENOMES}/Bacteriophage_lambda/Pacbio/NEB3011/Sequence/BowtieIndex/genome
+bowtie2	        ${GENOMES}/Bacteriophage_lambda/Pacbio/NEB3011/Sequence/Bowtie2Index/genome
+star            ${GENOMES}/Bacteriophage_lambda/Pacbio/NEB3011/Sequence/STARIndex/genome
+bwa             ${GENOMES}/Bacteriophage_lambda/Pacbio/NEB3011/Sequence/BWAIndex/genome
+hisat2	        
+hisat2_splices	
+gtf	            ${GENOMES}/Bacteriophage_lambda/Pacbio/NEB3011/Annotation/Version-2008-07-30/Genes/genes.gtf
