@@ -6,6 +6,6 @@ bowtie	        ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/BowtieIndex/genom
 bowtie2	        ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/Bowtie2Index/genome
 star            ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/STARIndex/genome
 bwa             ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/BWAIndex/genome
-hisat2	        
-hisat2_splices	
+hisat2	        ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/Hisat2Index/genome
+hisat2_splices	${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Sequence/Hisat2Index/splice_sites.txt
 gtf	            ${GENOMES}/Homo_sapiens/Ensembl/GRCh37/Annotation/Genes/genes.gtf

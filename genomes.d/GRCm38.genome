@@ -6,6 +6,6 @@ bowtie	        ${GENOMES}/Mus_musculus/Ensembl/GRCm38/Sequence/BowtieIndex/genom
 bowtie2	        ${GENOMES}/Mus_musculus/Ensembl/GRCm38/Sequence/Bowtie2Index/genome
 star            ${GENOMES}/Mus_musculus/Ensembl/GRCm38/Sequence/STARIndex/genome
 bwa             ${GENOMES}/Mus_musculus/Ensembl/GRCm38/Sequence/BWAIndex/genome
-hisat2	        
-hisat2_splices	
+hisat2	        ${GENOMES}/Mus_musculus/Ensembl/GRCm38/Sequence/Hisat2Index/genome
+hisat2_splices	${GENOMES}/Mus_musculus/Ensembl/GRCm38/Sequence/Hisat2Index/splice_sites.txt
 gtf	            ${GENOMES}/Mus_musculus/Ensembl/GRCm38/Annotation/Genes/genes.gtf
