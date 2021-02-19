@@ -1,3 +1,4 @@
+#!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 process FASTQC {
@@ -5,17 +6,15 @@ process FASTQC {
 	tag "$name" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
-	  tuple val(name), path(reads)
-		val (outputdir)
-		val (fastqc_args)
-		val (verbose)
+	  	tuple val(name), path(reads)
+		val(outputdir)
+		val(fastqc_args)
+		val(verbose)
 
 	output:
-	  tuple val(name), path ("*fastqc*"), emit: all
-		path "*.zip",  emit: report
-
-	  publishDir "$outputdir",
-		mode: "link", overwrite: true
+	  	tuple val(name), path ("*fastqc*"), emit: all
+		path "*.zip", emit: report
+		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
 		if (verbose){

@@ -1,3 +1,4 @@
+#!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 // parameters passed in by specialised pipelines
@@ -5,30 +6,27 @@ params.cutntag = false
 
 process BOWTIE2 {
 
-		label 'bowtie2' // Defined in nextflow.config
-
+		label 'bowtie2'
 		tag "$name" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
 		tuple val(name), path(reads)
-		val (outputdir)
-		val (bowtie2_args)
-		val (verbose)
+		val(outputdir)
+		val(bowtie2_args)
+		val(verbose)
 
 	output:
-		path "*bam",  emit: bam
+		path "*bam",  	   emit: bam
 		path "*stats.txt", emit: stats
-
-		publishDir "$outputdir",
-		mode: "link", overwrite: true
+		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
+		cores = 8
+		readString = ""
+		
 		if (verbose){
 			println ("[MODULE] BOWTIE2 ARGS: " + bowtie2_args)
 		}
-
-		cores = 8
-		readString = ""
 
 		// Options we add are
 		bowtie_options = bowtie2_args

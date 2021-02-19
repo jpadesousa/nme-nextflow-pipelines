@@ -1,3 +1,4 @@
+#!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 params.dual = false
@@ -8,17 +9,14 @@ process UMIBAM {
 
 	input:
 		path(bam)
-		val (outputdir)
-		val (umibam_args)
-		val (verbose)
+		val(outputdir)
+		val(umibam_args)
+		val(verbose)
 
 	output:
 		path "*report.txt", emit: report
 		path "*bam",        emit: bam
-
-		publishDir "$outputdir",
-		mode: "link", overwrite: true
-
+		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
 		if (verbose){

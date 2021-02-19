@@ -1,3 +1,4 @@
+#!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 params.singlecell = ''
@@ -11,22 +12,19 @@ params.three_prime_clip_R2 = ''
 
 process TRIM_GALORE {
 
-	label 'trimGalore' // Defined in nextflow.config
-
+	label 'trimGalore'
 	tag "$name" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
-		tuple val (name), path (reads)
-		val (outputdir)
-		val (trim_galore_args)
-		val (verbose)
+		tuple val(name), path(reads)
+		val(outputdir)
+		val(trim_galore_args)
+		val(verbose)
 
 	output:
-		tuple val(name), path ("*fq.gz"), emit: reads
+		tuple val(name), path("*fq.gz"), emit: reads
 		path "*trimming_report.txt", optional: true, emit: report
-
-		publishDir "$outputdir",
-		mode: "link", overwrite: true
+		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
 		if (verbose){
@@ -68,8 +66,7 @@ process TRIM_GALORE {
 		}
 
 		"""
-		module load trimgalore
-		module load fastqc
+		module load trimgalore fastqc
 		trim_galore -j 4 $trim_galore_args ${pairedString} ${reads}
 		"""
 }

@@ -1,18 +1,17 @@
+#!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 process BISMARK2REPORT {
 
 	input:
-		file (file)
-		val (outputdir)
-		val (bismark2report_args)
-		val (verbose)
+		file(file)
+		val(outputdir)
+		val(bismark2report_args)
+		val(verbose)
 
 	output:
 		path "*html", emit: html
-
-		publishDir "$outputdir",
-		mode: "link", overwrite: true
+		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
 		if (verbose){

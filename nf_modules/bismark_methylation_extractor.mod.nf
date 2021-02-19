@@ -1,3 +1,4 @@
+#!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 params.singlecell = false
@@ -8,32 +9,28 @@ params.nonCG      = false
 
 process BISMARK_METHYLATION_EXTRACTOR {
 
-	label 'BismarkMethylationExtractor' // Defined in nextflow.config
-
+	label 'BismarkMethylationExtractor'
 	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
 		path(bam)
-		val (outputdir)
-		val (bismark_methylation_extractor_args)
-		val (verbose)
+		val(outputdir)
+		val(bismark_methylation_extractor_args)
+		val(verbose)
 
 	output:
 		path "C*",          emit: context_files
 		path "*report.txt", emit: report
 		path "*M-bias.txt", emit: mbias
 		path "*cov.gz",     emit: coverage
-
-		publishDir "$outputdir",
-		mode: "link", overwrite: true
+		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
+		cores = 4
 
 		if (verbose){
 			println ("[MODULE] BISMARK METHYLATION EXTRACTOR ARGS: " + bismark_methylation_extractor_args)
 		}
-
-		cores = 4
 
 		// Options we add are
 		methXtract_options = bismark_methylation_extractor_args + " --gzip "

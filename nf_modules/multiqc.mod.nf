@@ -1,21 +1,20 @@
+#!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 process MULTIQC {
 
-	label 'multiQC' // Defined in nextflow.config
+	label 'multiQC'
 
 	input:
-		path (file)
-		val (outputdir)
-		val (multiqc_args)
-		val (verbose)
+		path(file)
+		val(outputdir)
+		val(multiqc_args)
+		val(verbose)
 
 	output:
-		path "*html",       emit: html
+		path "*html", emit: html
+		publishDir "$outputdir", mode: "link", overwrite: true
 		//path "*stats.txt", emit: stats
-
-		publishDir "$outputdir",
-		mode: "link", overwrite: true
 
 	script:
 

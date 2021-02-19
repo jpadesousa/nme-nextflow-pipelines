@@ -1,3 +1,4 @@
+#!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 params.singlecell = false
@@ -10,25 +11,21 @@ genome = params.genome["bismark"]
 
 process COVERAGE2CYTOSINE {
 
-	label 'coverage2Cytosine' // Defined in nextflow.config
-
+	label 'coverage2Cytosine'
 	tag "$coverage_file" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
 		path(coverage_file)
-		val (outputdir)
-		val (coverage2cytosine_args)
-		val (verbose)
+		val(outputdir)
+		val(coverage2cytosine_args)
+		val(verbose)
 
 	output:
 		path "*{report.txt.gz,report.txt}", emit: report
 		path "*{.cov.gz,.cov}",             emit: coverage
-
-		publishDir "$outputdir",
-		mode: "link", overwrite: true
+		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
-
 		// removing the file extension from the input file name
 		// (https://www.nextflow.io/docs/latest/script.html#removing-part-of-a-string)
 		outfile_basename = coverage_file.toString()  // Important to convert nextflow.processor.TaskPath object to String first

@@ -1,3 +1,4 @@
+#!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
 // parameters passed in by specialised pipelines
@@ -6,22 +7,19 @@ params.pbat       = false
 
 process BISMARK {
 
-	label 'bismark' // Defined in nextflow.config
-
+	label 'bismark'
 	tag "$name" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
 		tuple val(name), path(reads)
-		val (outputdir)
-		val (bismark_args)
-		val (verbose)
+		val(outputdir)
+		val(bismark_args)
+		val(verbose)
 
 	output:
-		path "*bam",        emit: bam
+		path "*bam", 		emit: bam
 		path "*report.txt", emit: report
-
-		publishDir "$outputdir",
-		mode: "link", overwrite: true
+		publishDir "$outputdir", mode: "link", overwrite: true
 
     script:
 		cores = 1

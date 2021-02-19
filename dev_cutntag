@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.outdir     = "."
+params.outdir     = "./results"
 params.genome     = ""
 params.verbose    = false
 params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically
@@ -12,7 +12,6 @@ params.trim_galore_args        = ''
 params.bowtie2_args            = ''
 params.multiqc_args            = ''
 params.samtools_sort_args      = ''
-params.samtools_index_args     = ''
 //params.bedtools_genomecov_args = ''
 
 params.help = false
@@ -52,8 +51,8 @@ include { FASTQC as FASTQC2 } from './nf_modules/fastqc.mod.nf'
 include { FASTQ_SCREEN }      from './nf_modules/fastq_screen.mod.nf'
 include { TRIM_GALORE }       from './nf_modules/trim_galore.mod.nf'
 include { BOWTIE2 }           from './nf_modules/bowtie2.mod.nf'   params(genome: genome, cutntag: true)
-include { SAMTOOLS_SORT}      from './nf_modules/samtools.mod.nf'
-//include { BEDTOOLS_GENOMECOV} from './nf_modules/bedtools.mod.nf' params(cutntag: true)
+include { SAMTOOLS_SORT }     from './nf_modules/samtools.mod.nf'
+//include { BEDTOOLS_GENOMECOV } from './nf_modules/bedtools.mod.nf' params(cutntag: true)
 include { MULTIQC }           from './nf_modules/multiqc.mod.nf'
 
 file_ch = makeFilesChannel(args)
@@ -79,7 +78,7 @@ workflow {
 
         // multiqc_ch.subscribe {  println "Got: $it"  }
 
-        MULTIQC         (multiqc_ch, params.outdir, params.multiqc_args, params.verbose)
+        MULTIQC (multiqc_ch, params.outdir, params.multiqc_args, params.verbose)
 }
 
 // Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
@@ -117,6 +116,8 @@ def helpMessage() {
         |
         --- FastQC
         --- Bowtie 2
+            |
+            --- Samtools sort
     --- MultiQC*
 
     * This step runs only once ALL other jobs have completed.
@@ -129,6 +130,7 @@ def helpMessage() {
     FastQ Screen:   defaults (Bowtie 2; local mode)
     Trim Galore:    defaults (adapter auto-detection)
     Bowtie 2:       end-to-end mode; '--no-unal'; for paired-end files: '--no-mixed --no-discordant' (concordant PE alignmnents only)
+    Samtools sort
 
     To add additional parameters to any of the programs, consider supplying tool-specific arguments (see --toolname_args="..." below).
 
