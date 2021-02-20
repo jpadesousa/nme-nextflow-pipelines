@@ -1,10 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.singlecell = ''
-params.rrbs       = ''
-params.pbat       = ''
-params.clock      = false
+params.singlecell  = ''
+params.rrbs        = ''
+params.pbat        = ''
+params.clock       = false
 // For Epigenetic Clock Processing
 params.three_prime_clip_R1 = ''
 params.three_prime_clip_R2 = ''

@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.outdir     = "."
+params.outdir     = "./results"
 params.genome     = ""
 params.verbose    = false
 params.single_end = false  // default mode is auto-detect. NOTE: params are automatically handed over 

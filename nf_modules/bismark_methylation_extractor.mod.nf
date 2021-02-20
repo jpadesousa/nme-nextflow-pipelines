@@ -26,7 +26,6 @@ process BISMARK_METHYLATION_EXTRACTOR {
 		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
-		cores = 4
 
 		if (verbose){
 			println ("[MODULE] BISMARK METHYLATION EXTRACTOR ARGS: " + bismark_methylation_extractor_args)
@@ -58,10 +57,10 @@ process BISMARK_METHYLATION_EXTRACTOR {
 			// println("File seems to be single-end")
 		}
 
-		// println ("Now running command: bismark_methylation_extractor -parallel ${cores} ${methXtract_options} ${bam}")
+		// println ("Now running command: bismark_methylation_extractor -parallel ${task.cpus} ${methXtract_options} ${bam}")
 		"""
 		module load bismark
-		bismark_methylation_extractor --bedGraph --buffer 10G -parallel ${cores} ${methXtract_options} ${bam}
+		bismark_methylation_extractor --bedGraph --buffer 10G -parallel ${task.cpus} ${methXtract_options} ${bam}
 		"""
 
 }

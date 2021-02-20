@@ -1,13 +1,13 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.outdir = "."
+params.outdir = "./results"
 params.genome = ""
 
-params.pbat   = '9' // default is 9, but this can be changed
+params.pbat        = '9' // default is 9, but this can be changed
 
-params.verbose    = false
-params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically
+params.verbose     = false
+params.single_end  = false  // default mode is auto-detect. NOTE: params are handed over automatically
 
 params.fastqc_args                        = ''
 params.fastq_screen_args                  = ''
@@ -60,9 +60,7 @@ include { FASTQ_SCREEN }                         from './nf_modules/fastq_screen
 include { TRIM_GALORE }                          from './nf_modules/trim_galore.mod.nf' params(pbat: params.pbat)
 // Adding pbat flag for PBAT processing
 include { BISMARK }                              from './nf_modules/bismark.mod.nf' params(genome: genome, pbat: true)
-
 include { BISMARK_DEDUPLICATION }                from './nf_modules/bismark_deduplication.mod.nf'
-
 // Adding pbat flag for PBAT processing
 include { BISMARK_METHYLATION_EXTRACTOR }        from './nf_modules/bismark_methylation_extractor.mod.nf' params(pbat: true)
 include { BISMARK2REPORT }                       from './nf_modules/bismark2report.mod.nf'

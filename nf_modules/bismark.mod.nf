@@ -2,8 +2,8 @@
 nextflow.enable.dsl=2
 
 // parameters passed in by specialised pipelines
-params.singlecell = ''
-params.pbat       = false
+params.singlecell  = ''
+params.pbat        = false
 
 process BISMARK {
 
@@ -17,8 +17,9 @@ process BISMARK {
 		val(verbose)
 
 	output:
-		path "*bam", 		emit: bam
-		path "*report.txt", emit: report
+		path "*bam", 							   emit: bam
+		tuple val(name), path("*unmapped*fq.gz"),  emit: unmapped_reads
+		path "*report.txt", 					   emit: report
 		publishDir "$outputdir", mode: "link", overwrite: true
 
     script:
@@ -62,6 +63,6 @@ process BISMARK {
 
 		"""
 		module load bismark
-		bismark --parallel $cores --basename $bismark_name $index $bismark_options $readString
+		bismark --parallel ${cores} --basename $bismark_name $index $bismark_options $readString
 		"""
 }

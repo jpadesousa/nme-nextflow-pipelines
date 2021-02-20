@@ -21,7 +21,6 @@ process BOWTIE2 {
 		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
-		cores = 8
 		readString = ""
 		
 		if (verbose){
@@ -49,7 +48,7 @@ process BOWTIE2 {
 
 		"""
 		module load bowtie2 samtools
-		bowtie2 -x ${index} -p ${cores} ${bowtie_options} ${readString}  2>${bowtie_name}_bowtie2_stats.txt | samtools view -bS -F 4 -F 8 -F 256 -> ${bowtie_name}_bowtie2.bam
+		bowtie2 -x ${index} -p ${task.cpus} ${bowtie_options} ${readString}  2>${bowtie_name}_bowtie2_stats.txt | samtools view -bS -F 4 -F 8 -F 256 -> ${bowtie_name}_bowtie2.bam
 		"""
 
 }
