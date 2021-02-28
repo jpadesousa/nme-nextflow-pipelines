@@ -19,7 +19,7 @@ process BISMARK_METHYLATION_EXTRACTOR {
 		val(verbose)
 
 	output:
-		path "C*",          emit: context_files
+		path "C*", 			emit: context_files
 		path "*report.txt", emit: report
 		path "*M-bias.txt", emit: mbias
 		path "*cov.gz",     emit: coverage

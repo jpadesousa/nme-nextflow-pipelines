@@ -41,7 +41,7 @@ if (params.verbose){
     println ("[WORKFLOW] BISMARK METHYLATION EXTRACTOR ARGS ARE: "  + params.bismark_methylation_extractor_args)
 }
 
-include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
+include { makeFilesChannel; getFileBaseNames }    from './nf_modules/files.mod.nf'
 include { getGenome }                             from './nf_modules/genomes.mod.nf'
 include { listGenomes }                           from './nf_modules/genomes.mod.nf'
 
@@ -113,6 +113,7 @@ workflow.onComplete {
     def msg = """\
         Pipeline execution summary
         ---------------------------
+        Jobname     : ${workflow.runName}
         Completed at: ${workflow.complete}
         Duration    : ${workflow.duration}
         Success     : ${workflow.success}
@@ -121,7 +122,7 @@ workflow.onComplete {
         """
     .stripIndent()
 
-    sendMail(to: "${workflow.userName}@babraham.ac.uk", subject: 'Minimal pipeline execution report', body: msg)
+    sendMail(to: "${workflow.userName}@ethz.ch", subject: 'Minimal pipeline execution report', body: msg)
 }
 
 def helpMessage() {

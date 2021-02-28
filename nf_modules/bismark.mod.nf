@@ -17,9 +17,9 @@ process BISMARK {
 		val(verbose)
 
 	output:
-		path "*bam", 							   emit: bam
-		tuple val(name), path("*unmapped*fq.gz"),  emit: unmapped_reads
-		path "*report.txt", 					   emit: report
+		path "*bam", 							   				  emit: bam
+		tuple val(name), path("*unmapped*fq.gz"), optional: true, emit: unmapped_reads
+		path "*report.txt", 					   				  emit: report
 		publishDir "$outputdir", mode: "link", overwrite: true
 
     script:

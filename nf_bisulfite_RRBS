@@ -28,11 +28,11 @@ if (params.list_genomes){
 }
 
 if (params.verbose){
-    println ("[WORKFLOW] FASTQC ARGS: "           + params.fastqc_args)
-    println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: " + params.fastq_screen_args)
-    println ("[WORKFLOW] TRIM GALORE ARGS: "      + params.trim_galore_args)
-    println ("[WORKFLOW] BISMARK ARGS ARE: "      + params.bismark_args)
-     println ("[WORKFLOW] BISMARK METHYLATION EXTRACTOR ARGS ARE: " + params.bismark_methylation_extractor_args)}
+    println ("[WORKFLOW] FASTQC ARGS: "                            + params.fastqc_args)
+    println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: "                  + params.fastq_screen_args)
+    println ("[WORKFLOW] TRIM GALORE ARGS: "                       + params.trim_galore_args)
+    println ("[WORKFLOW] BISMARK ARGS ARE: "                       + params.bismark_args)
+    println ("[WORKFLOW] BISMARK METHYLATION EXTRACTOR ARGS ARE: " + params.bismark_methylation_extractor_args)}
 
 include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 include { getGenome }                            from './nf_modules/genomes.mod.nf'
@@ -54,7 +54,7 @@ include { TRIM_GALORE }                           from './nf_modules/trim_galore
 include { BISMARK }                               from './nf_modules/bismark.mod.nf'        params(genome: genome)
 
 // Adding flag for RRBS processing
-include { BISMARK_METHYLATION_EXTRACTOR }          from './nf_modules/bismark_methylation_extractor.mod.nf'   params(rrbs: true)
+include { BISMARK_METHYLATION_EXTRACTOR }         from './nf_modules/bismark_methylation_extractor.mod.nf'   params(rrbs: true)
 include { BISMARK2REPORT }                        from './nf_modules/bismark2report.mod.nf'
 include { BISMARK2SUMMARY }                       from './nf_modules/bismark2summary.mod.nf'
 
@@ -105,6 +105,7 @@ workflow.onComplete {
     def msg = """\
         Pipeline execution summary
         ---------------------------
+        Jobname     : ${workflow.runName}
         Completed at: ${workflow.complete}
         Duration    : ${workflow.duration}
         Success     : ${workflow.success}
@@ -113,7 +114,7 @@ workflow.onComplete {
         """
     .stripIndent()
 
-    sendMail(to: "${workflow.userName}@babraham.ac.uk", subject: 'Minimal pipeline execution report', body: msg)
+    sendMail(to: "${workflow.userName}@ethz.ch", subject: 'Minimal pipeline execution report', body: msg)
 }
 
 def helpMessage() {
