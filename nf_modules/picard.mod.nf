@@ -14,7 +14,6 @@ process MARK_DUPLICATES{
 	output:
 		tuple val(name), path("*fastqc*"), emit: all
 	 	publishDir "$outputdir", mode: "link", overwrite: true
-		//path "*.zip", emit: report
 
 	script:
 		if (verbose){
@@ -23,6 +22,6 @@ process MARK_DUPLICATES{
 
 		"""
 		module load picard
-		
+		picard MarkDuplicates ${reads}
 		"""
 }

@@ -13,7 +13,6 @@ process BEDTOOLS_GENOMECOV{
 		val(verbose)
 
 	output:
-		// path "*report.txt", emit: report
 		path "*bedgraph", emit: bedgraph
 		publishDir "$outputdir", mode: "link", overwrite: true
 
@@ -25,11 +24,12 @@ process BEDTOOLS_GENOMECOV{
 		}
 
         if (params.cutntag) {
-			bedtools_genomecov_options += " -ibam -bga " // Bedtools genomecov parameters for the CUT&Tag pipeline
+			bedtools_genomecov_options += " -bga " // Bedtools genomecov parameters for the CUT&Tag pipeline
 		}
 
 		"""
 		module load bedtools2
-		bedtools genomecov $bedtools_genomecov_options $bam
+		bedtools genomecov ${bedtools_genomecov_options} -ibam ${bam} > ${bam}.bedgraph 
+		rename .bam.bedgraph .bedgraph *
     	"""
 }
