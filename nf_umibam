@@ -1,6 +1,8 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+// last modified 01 March 2021
+
 params.outdir     = "./results"
 params.verbose    = false
 params.single_end = false
@@ -16,18 +18,22 @@ if (params.help){
 }
 
 if (params.verbose){
-    println ("[WORKFLOW] UMIBAM ARGS ARE: "       + params.umibam_args)
+    println ("[WORKFLOW] UMIBAM ARGS ARE: " + params.umibam_args)
 }
 
 //include { makeFilesChannel; getFileBaseNames }  from './nf_modules/files_bam.mod.nf'
 include { UMIBAM }                                  from './nf_modules/umibam.mod.nf'
 
 // file_ch = makeFilesChannel(args)
-file_ch = Channel.fromPath(args)     // UmiBam expects just the path to be passed in
-
+file_ch = Channel .fromPath(args)    // UmiBam expects just the path to be passed in
+    //.bind( 'Hello world' )
+    .map{f-> [ f.baseName, f] } // transforming a channel with Paths from *.bam to a tuple with [basename,[basename.bam]]
+    //.view()
+    
 workflow {
+    // file_ch.view()
     main:
-        UMIBAM                         (file_ch, params.outdir, params.umibam_args, params.verbose)
+        UMIBAM (file_ch, params.outdir, params.umibam_args, params.verbose)
 
 }
 
@@ -38,6 +44,7 @@ workflow.onComplete {
     def msg = """\
         Pipeline execution summary
         ---------------------------
+        Jobname     : ${workflow.runName}
         Completed at: ${workflow.complete}
         Duration    : ${workflow.duration}
         Success     : ${workflow.success}

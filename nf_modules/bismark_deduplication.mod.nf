@@ -2,19 +2,19 @@
 nextflow.enable.dsl=2
 
 process BISMARK_DEDUPLICATION {
-
-	label 'bismarkDeduplication' // Defined in nextflow.config
+	
+	label 'bismarkDeduplication'
 	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
-
-	input:
-		path(bam)
-		val(outputdir)
-		val(deduplicate_bismark_args)
-		val(verbose)
+  	
+    input:
+	    tuple val(name), path(bam)
+		val (outputdir)
+		val (deduplicate_bismark_args)
+		val (verbose)
 
 	output:
 		path "*report.txt", emit: report
-		path "*bam", emit: bam
+		tuple val(name), path ("*bam"), emit: bam
 		publishDir "$outputdir", mode: "link", overwrite: true
 
     script:
@@ -23,7 +23,7 @@ process BISMARK_DEDUPLICATION {
 		}
 
 		// Options we add are
-		deduplication_options  = deduplicate_bismark_args
+		deduplication_options = deduplicate_bismark_args
 		deduplication_options += " --bam "
 
 		"""
