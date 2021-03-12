@@ -13,7 +13,6 @@ process SAMTOOLS_SORT{
 		val(verbose)
 
 	output:
-		// path "*report.txt", emit: report
 		path "*bam", emit: bam
 		publishDir "$outputdir", mode: "link", overwrite: true
 

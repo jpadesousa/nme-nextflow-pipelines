@@ -3,16 +3,18 @@ nextflow.enable.dsl=2
 
 process MARK_DUPLICATES{	
 
-	tag "$name" // Adds name to job submission instead of (1), (2) etc.
+	label 'picard'
+	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
-		tuple val(name), path(reads)
+		path(bam)
 		val(outputdir)
 		val(mark_duplicates_args)
 		val(verbose)
 
 	output:
-		tuple val(name), path("*fastqc*"), emit: all
+		path "*bam", emit: bam
+		path "*txt", emit: metrics
 	 	publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
@@ -22,6 +24,10 @@ process MARK_DUPLICATES{
 
 		"""
 		module load picard
-		picard MarkDuplicates ${reads}
+
+		picard MarkDuplicates INPUT=${bam} OUTPUT=${bam}.dedup.bam ASSUME_SORTED=true METRICS_FILE=${bam}.MarkDuplicates.metrics.txt ${mark_duplicates_args}
+
+		rename .bam.dedup .dedup *
+		rename .bam.MarkDuplicates.metrics.txt .MarkDuplicates.metrics.txt *
 		"""
 }

@@ -66,7 +66,7 @@ process TRIM_GALORE {
 		}
 
 		"""
-		module load trimgalore fastqc
+		module load trimgalore fastqc python_cpu
 		trim_galore -j 4 $trim_galore_args ${pairedString} ${reads}
 		"""
 }
