@@ -13,7 +13,7 @@ process BISMARK_DEDUPLICATION {
 		val (verbose)
 
 	output:
-		path "*report.txt", emit: report
+		path "*report.txt",             emit: report
 		tuple val(name), path ("*bam"), emit: bam
 		publishDir "$outputdir", mode: "link", overwrite: true
 

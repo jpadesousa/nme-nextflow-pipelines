@@ -20,7 +20,8 @@ process BISMARK {
 
 	output:
 	    tuple val(name), path ("*bam"), emit: bam
-		path "*report.txt", emit: report
+		path "*report.txt", 			emit: report
+		
 		// we always pass back the original name so we can use .join() later on, e.g. for bismark2bedGraph
 		tuple val(name), path ("*unmapped_reads_1.fq.gz"), optional: true, emit: unmapped1
 		tuple val(name), path ("*unmapped_reads_2.fq.gz"), optional: true, emit: unmapped2

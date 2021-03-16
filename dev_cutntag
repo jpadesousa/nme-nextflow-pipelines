@@ -111,8 +111,7 @@ def helpMessage() {
     SYNOPSIS:
 
     In a nutshell, this workflow runs an entire processing pipeline on FastQ files, including QC, contamination QC,
-    quality-/adapter trimming, alignments to a genome using Bowtie 2, and finally generate an aggregate QC report. The
-    workflow is suitable for CUT&Tag. Here is a graphical representation of the workflow:
+    quality-/adapter trimming, alignments to a genome using Bowtie 2, sorting, marking duplicates, generating a genome coverage bedgraph, and finally generate an aggregate QC report. The workflow is suitable for CUT&Tag. Here is a graphical representation of the workflow:
 
     --- FastQC
     --- FastQ Screen
@@ -136,7 +135,7 @@ def helpMessage() {
     FastQC:              defaults (-q)
     FastQ Screen:        defaults (Bowtie 2; local mode)
     Trim Galore:         defaults (adapter auto-detection)
-    Bowtie 2:            end-to-end mode; '--no-unal'; for paired-end files: '--no-mixed --no-discordant' (concordant PE alignmnents only)
+    Bowtie 2:            end-to-end mode; '--no-unal'; for paired-end files: '--no-mixed --no-discordant' (concordant PE alignmnents only); '--local --very-sensitive --phred33 -I 10 -X 700'
     Samtools sort        defaults
     Mark duplicates      defaults (ASSUME_SORTED=true)
     Bedtools genomecov   defaults (-bga -ibam)
@@ -149,7 +148,7 @@ def helpMessage() {
 
     USAGE:
 
-    nf_chipseq [options] --genome <genomeID> <input files>
+    nf_cutntag [options] --genome <genomeID> <input files>
 
     Mandatory arguments:
     ====================

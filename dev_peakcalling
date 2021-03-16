@@ -1,0 +1,183 @@
+#!/usr/bin/env nextflow
+nextflow.enable.dsl=2
+
+params.outdir     = "./results"
+params.genome     = ""
+params.verbose    = false
+params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically
+
+params.macs_callpeak_args  = ''
+params.seacr_args          = ''
+
+
+
+
+params.peak_caller = 'macs' // default is macs3
+
+// Validate peak callers
+assert params.peak_caller == 'macs' || params.peak_caller == 'seacr' : "Invalid peak caller option: >>${params.peak_caller}<<. Valid options are: 'macs' or 'seacr'\n\n"
+println ("Using peak caller: " + params.peak_caller)
+
+
+
+
+params.help = false
+// Show help message and exit
+if (params.help){
+    helpMessage()
+    exit 0
+}
+
+
+
+include { makeFilesChannel; getFileBaseNames }  from './nf_modules/files.mod.nf'
+include { getGenome; listGenomes }              from './nf_modules/genomes.mod.nf'
+
+params.list_genomes = false;
+if (params.list_genomes){
+    println ("[WORKLFOW] List genomes selected")
+}
+
+if (params.list_genomes){
+    listGenomes()  // this lists all available genomes, and exits
+}
+
+genome = getGenome(params.genome)
+
+
+
+
+if (params.verbose){
+    println ("[WORKFLOW] MACS CALLPEAK ARGS: " + params.macs_callpeak_args)
+}
+
+if (params.peak_caller == 'macs'){
+
+    include { MACS_CALLPEAK } from './nf_modules/macs.mod.nf' params(genome: genome)
+    if (params.verbose){ println ("[WORKFLOW] MACS CALLPEAK ARGS: " + params.macs_callpeak_args) }
+
+}
+else if (params.peak_caller == 'seacr'){
+
+    include { SEACR }         from './nf_modules/seacr.mod.nf'
+    if (params.verbose){ println ("[WORKFLOW] SEACR ARGS: " + params.seacr_args) }
+    
+}
+
+
+
+
+// Loading the design csv file
+if(args[0].endsWith('.csv')){
+
+    Channel.fromPath(args)
+    	     .splitCsv(header: true, sep: ',')
+           .map { row -> [ file(row.treatment, checkIfExists: true), file(row.control, checkIfExists: true) ] }
+           .set { files_ch }
+
+} else {
+
+    Channel.fromPath(args)
+           .set { files_ch }
+
+}
+
+
+
+workflow {
+
+    main:
+        if (params.peak_caller == 'macs'){
+            MACS_CALLPEAK  (files_ch, params.outdir, params.macs_callpeak_args, params.verbose)
+        }
+        else if (params.peak_caller == 'seacr'){
+            SEACR          (files_ch, params.outdir, params.seacr_args, params.verbose)
+        }
+
+}
+
+
+workflow.onComplete {
+
+    def msg = """\
+        Pipeline execution summary
+        ---------------------------
+        Jobname     : ${workflow.runName}
+        Completed at: ${workflow.complete}
+        Duration    : ${workflow.duration}
+        Success     : ${workflow.success}
+        workDir     : ${workflow.workDir}
+        exit status : ${workflow.exitStatus}
+        """
+    .stripIndent()
+
+    //sendMail(to: "${workflow.userName}@ethz.ch", subject: 'Minimal pipeline execution report', body: msg)
+}
+
+def helpMessage() {
+ 
+    log.info"""
+    >>
+
+
+    SYNOPSIS:
+
+    This workflow takes in a list of filenames (in BAM format), and then 
+
+    - sorts these files by genomic coordinates (samtools sort), and finally
+    - creates a BAM index of the file (samtools index)
+    
+    on the Babraham stone compute cluster. Currently, both the original BAM file as well as a sorted version (ending in "_sorted.bam")
+    will be kept.
+
+              ==============================================================================================================
+
+
+    USAGE:
+    
+    nf_peakcalling [options] <input_files>
+    
+    Mandatory arguments:
+    ====================
+
+      <input_files>                   List of input files in BAM format, e.g. '*bam'.
+                                      
+    Tool-specific options:
+    ======================
+
+      --macs_callpeak_args="[str]"    This option can take any number of options that are compatible with 'macs callpeak' to modify its default
+                                      behaviour. For more detailed information on available options please refer to the Samtools documentation,
+                                      or run 'macs callpeak' on the command line. Please note that the format ="your options" needs to be
+                                      strictly adhered to in order to work correctly. [Default: None]
+
+    Other options:
+    ==============
+
+      --outdir [str]                  Path to the output directory. [Default: current working directory]
+
+      --verbose                       More verbose status messages. [Default: OFF]
+      --help                          Displays this help message and exits.
+
+    Workflow options:
+    =================
+
+    Please note the single '-' hyphen for the following options!
+
+      -resume                         If a pipeline workflow has been interrupted or stopped (e.g. by accidentally closing a laptop),
+                                      this option will attempt to resume the workflow at the point it got interrupted by using
+                                      Nextflow's caching mechanism. This may save a lot of time.
+
+      -bg                             Sends the entire workflow into the background, thus disconnecting it from the terminal session.
+                                      This option launches a daemon process (which will keep running on the headnode) that watches over
+                                      your workflow, and submits new jobs to the SLURM queue as required. Use this option for big pipeline
+                                      jobs, or whenever you do not want to watch the status progress yourself. Upon completion, the
+                                      pipeline will send you an email with the job details. This option is HIGHLY RECOMMENDED!
+
+      -process.executor=local         Temporarily changes where the workflow is executed to the 'local' machine. See also the nextflow.config
+                                      file for more details. [Default: slurm] 
+    
+
+    <<
+    """.stripIndent()
+
+}

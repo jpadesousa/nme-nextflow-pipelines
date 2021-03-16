@@ -13,7 +13,7 @@ process FASTQC {
 
 	output:
 	  	tuple val(name), path ("*fastqc*"), emit: all
-		path "*.zip", emit: report
+		path "*.zip", 						emit: report
 		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:

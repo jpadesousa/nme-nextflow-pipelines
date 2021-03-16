@@ -2,9 +2,8 @@ nextflow.enable.dsl=2
 
 process RESTRAININGORDER {
 	
-	tag "$bam" // Adds the file name to job submission
-	
 	label 'hugeMem'
+	tag "$bam" // Adds the file name to job submission
 			
     input:
 	    path(bam)

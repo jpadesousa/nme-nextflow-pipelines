@@ -46,9 +46,8 @@ if (params.verbose){
     println ("[WORKFLOW] BISMARK METHYLATION EXTRACTOR ARGS ARE: " + params.bismark_methylation_extractor_args)
 }
 
-include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
-include { getGenome }                             from './nf_modules/genomes.mod.nf'
-include { listGenomes }                           from './nf_modules/genomes.mod.nf'
+include { makeFilesChannel; getFileBaseNames }  from './nf_modules/files.mod.nf'
+include { getGenome; listGenomes }              from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
@@ -105,21 +104,15 @@ workflow {
         BISMARK_METHYLATION_EXTRACTOR   (BISMARK_DEDUPLICATION.out.bam, params.outdir, params.bismark_methylation_extractor_args, params.verbose)
         METHXTRACT_UN1                  (BISMARK_DEDUP1.out.bam, params.outdir, params.bismark_methylation_extractor_args, params.verbose)
         METHXTRACT_UN2                  (BISMARK_DEDUP2.out.bam, params.outdir, params.bismark_methylation_extractor_args, params.verbose)
-        
-        // BISMARK_METHYLATION_EXTRACTOR.out.context_files_CG.view()
-        // METHXTRACT_UN1.out.context_files_CG.view()
-        // METHXTRACT_UN2.out.context_files_CG.view()
 
         // To merge all relevant CpG calls, we will need a join statement instead of mix
         // left.join(right).view(); Joining occurs with the first element as the key
         ch_bedGraph_unmapped = METHXTRACT_UN1.out.context_files_CG
                          .join(METHXTRACT_UN2.out.context_files_CG, by: [0])
-                         // .view()
 
         ch_bismark2bedGraph =  BISMARK_METHYLATION_EXTRACTOR.out.context_files_CG
                          .join(ch_bedGraph_unmapped, by: [0])
                          .map { it ->  [ it[0], [it[1], it[2], it[3]].flatten() ] }
-                         //.view()
        
         BISMARK2BEDGRAPH                (ch_bismark2bedGraph, params.outdir, params.bismark2bedGraph_args, params.verbose)
       

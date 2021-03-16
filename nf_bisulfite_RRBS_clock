@@ -29,17 +29,16 @@ if (params.list_genomes){
 }
 
 if (params.verbose){
-    println ("[WORKFLOW] FASTQC ARGS: "           + params.fastqc_args)
-    println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: " + params.fastq_screen_args)
-    println ("[WORKFLOW] TRIM GALORE ARGS: "      + params.trim_galore_args)
-    println ("[WORKFLOW] BISMARK ARGS ARE: "      + params.bismark_args)
-    println ("[WORKFLOW] UMIBAM ARGS ARE: "       + params.umibam_args)
+    println ("[WORKFLOW] FASTQC ARGS: "                            + params.fastqc_args)
+    println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: "                  + params.fastq_screen_args)
+    println ("[WORKFLOW] TRIM GALORE ARGS: "                       + params.trim_galore_args)
+    println ("[WORKFLOW] BISMARK ARGS ARE: "                       + params.bismark_args)
+    println ("[WORKFLOW] UMIBAM ARGS ARE: "                        + params.umibam_args)
     println ("[WORKFLOW] BISMARK METHYLATION EXTRACTOR ARGS ARE: " + params.bismark_methylation_extractor_args)
 }
 
 include { makeFilesChannel; getFileBaseNames }     from './nf_modules/files.mod.nf'
-include { getGenome }                              from './nf_modules/genomes.mod.nf'
-include { listGenomes }                            from './nf_modules/genomes.mod.nf'
+include { getGenome; listGenomes }                 from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
@@ -82,7 +81,6 @@ workflow {
         FASTQC3                        (TRIM_GALORE.out.reads, params.outdir, params.fastqc_args, params.verbose)
         FASTQ_SCREEN                   (TRIM_GALORE.out.reads, params.outdir, params.fastq_screen_args, params.verbose)
         BISMARK                        (TRIM_GALORE.out.reads, params.outdir, params.bismark_args, params.verbose)
-        // Need UmiBam
         UMIBAM                         (BISMARK.out.bam, params.outdir, params.umibam_args, params.verbose)
 
         // Skipping deduplication step
@@ -122,6 +120,7 @@ workflow.onComplete {
     def msg = """\
         Pipeline execution summary
         ---------------------------
+        Jobname     : ${workflow.runName}
         Completed at: ${workflow.complete}
         Duration    : ${workflow.duration}
         Success     : ${workflow.success}

@@ -10,7 +10,7 @@ process BISMARK2BEDGRAPH {
 	tag "$name" // Adds name to job submission instead of (1), (2) etc.
 			
     input:
-	    tuple val (name), path(reads)
+	    tuple val(name), path(reads)
 		val (outputdir)
 		val (bismark2bedGraph_args)
 		val (verbose)

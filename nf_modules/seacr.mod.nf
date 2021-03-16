@@ -2,8 +2,6 @@
 nextflow.enable.dsl=2
 
 process SEACR {	
-    
-	tag "$bedgraph" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
 		path(bedgraph)
@@ -21,29 +19,44 @@ process SEACR {
 			println ("[MODULE] SEACR ARGS: " + seacr_args)
 		}
 
-		if (seacr_args =~ /.*\.bedgraph.*|.*\.bg.*/){
-			output_suffix = ".IgG"
+
+		if (bedgraph instanceof List) {
+			files_command   = bedgraph[0] + " " + bedgraph[1]
+			output_name     = bedgraph[0].toString() - ".bedgraph"
+			output_suffix   = ""
+			seacr_threshold = ""
 		} else {
+			files_command = bedgraph
+			output_name   = bedgraph.toString() - ".bedgraph"
+
 			if (seacr_args =~ /.*\d.*/){
-            	output_suffix = ".FDR"
+				arr = seacr_args.split(" ", 2)
+				seacr_threshold = arr[0]
+            	output_suffix = ".FDR_" + arr[0]
 			} else {
-				seacr_args = " 0.01 " + seacr_args
-            	output_suffix = ".FDR_0.01"
+				seacr_threshold = "0.01"
+           		output_suffix = ".FDR_0.01"
 			}
-        }
+		}
+
+
 
         if(!(seacr_args =~ /.*norm.*|.*non.*/)){
-            seacr_args += " norm "
-        }
+            seacr_normalization = "norm"
+        } else {
+			seacr_normalization = "non"
+		}
 
         if(!(seacr_args =~ /.*relaxed.*|.*stringent.*/)){
-            seacr_args += " stringent "
-        }
+            seacr_mode = "stringent"
+        } else {
+			seacr_mode = "relaxed"
+		}
 
-        bedgraph_name = bedgraph.toString() - ".bedgraph"
+
 
 		"""
 		module load seacr
-        seacr ${bedgraph} ${seacr_args} "${bedgraph_name}${output_suffix}"
+        seacr ${files_command} ${seacr_threshold} ${seacr_normalization} ${seacr_mode} "${output_name}${output_suffix}"
     	"""
 }

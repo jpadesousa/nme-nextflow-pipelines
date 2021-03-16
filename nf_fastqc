@@ -7,7 +7,7 @@ params.verbose     = false
 params.single_end  = false  // default mode is auto-detect. NOTE: params are handed over automatically 
 
 if (params.verbose){
-    println ("[WORKFLOW] FASTQC ARGS: "           + params.fastqc_args)
+    println ("[WORKFLOW] FASTQC ARGS: " + params.fastqc_args)
 }
 
 params.help = false
@@ -39,6 +39,7 @@ workflow.onComplete {
     def msg = """\
         Pipeline execution summary
         ---------------------------
+        Jobname     : ${workflow.runName}
         Completed at: ${workflow.complete}
         Duration    : ${workflow.duration}
         Success     : ${workflow.success}

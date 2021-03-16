@@ -19,6 +19,7 @@ process BISMARK2SUMMARY {
 		// This is only a temporary workaround until Paolo has fixed the Nextflow bug.
 		// https://github.com/nextflow-io/nextflow/issues/1519
 		bismark2summary_args = bismark2summary_args.replaceAll(/'/,"")
+		
 		if (verbose){
 			println ("[MODULE] BISMARK2SUMMARY ARGS: " + bismark2summary_args)
 		}
