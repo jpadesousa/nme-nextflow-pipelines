@@ -4,7 +4,6 @@ nextflow.enable.dsl=2
 params.outdir     = "./results"
 params.genome     = ""
 params.verbose    = false
-params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically
 
 params.macs_callpeak_args  = ''
 params.seacr_args          = ''
@@ -111,7 +110,7 @@ workflow.onComplete {
         """
     .stripIndent()
 
-    //sendMail(to: "${workflow.userName}@ethz.ch", subject: 'Minimal pipeline execution report', body: msg)
+    sendMail(to: "${workflow.userName}@ethz.ch", subject: 'Minimal pipeline execution report', body: msg)
 }
 
 def helpMessage() {
@@ -119,28 +118,52 @@ def helpMessage() {
     log.info"""
     >>
 
-
     SYNOPSIS:
 
-    This workflow takes in a list of filenames (in BAM format), and then 
-
-    - sorts these files by genomic coordinates (samtools sort), and finally
-    - creates a BAM index of the file (samtools index)
+    This workflow takes in a list of files (in BedGraph format for Seacr and the various file formats suitable for MACS2)
+    or a CSV (comma-separated values) file. The CSV file needs to have the following structure:
     
-    on the Babraham stone compute cluster. Currently, both the original BAM file as well as a sorted version (ending in "_sorted.bam")
-    will be kept.
+    ==============================================================================================================
+    treatment,control
+    SEQ01_H3K27me3_rep1.bam,SEQ01_input_rep1.bam
+    SEQ01_H3K27me3_rep2.bam,SEQ01_input_rep2.bam
+    SEQ01_H3K27me3_rep3.bam,SEQ01_input_rep3.bam
+    ==============================================================================================================
+    
+    The first line must ALWAYS be "treatment,control". The following lines with the files names must have the
+    full directory if those are not in the working directory. The file names must match with the files available
+    in the working directory or in the folder specified by full directory.
 
-              ==============================================================================================================
+    If the input file is a CSV document, the pipeline with take the first column as the treatment samples and
+    the second column as the control sample. If the second column is empty, the peak caller will run without
+    a control sample.
+    If the input file is a aligned files (e.g., *.bam or *.bedgraph), the peak caller will run without a control sample.
 
+
+
+    ==============================================================================================================
 
     USAGE:
     
-    nf_peakcalling [options] <input_files>
+    nf_peakcalling [options] --genome <genomeID> <input_files>
     
     Mandatory arguments:
     ====================
 
-      <input_files>                   List of input files in BAM format, e.g. '*bam'.
+      <input_files>                   [Peak calling without control sample]
+                                      List of input files in BAM/BED/BedGraph format or other format
+                                      required by the peak caller, e.g. '*.bam' or '*.bedgraph'.
+                                      
+                                      or
+
+                                      [Peak calling with control sample]
+                                      A CSV file with the names of the treatment and control files in
+                                      BAM/BED/BedGraph format or other format required by the peak caller, e.g. 'design.csv'.
+
+      (*) --genome [str]              Genome build ID to be used for the alignment, e.g. GRCh38 (latest human genome) or GRCm38
+                                      (latest mouse genome build). To list all available genomes, see '--list_genomes' below.
+
+                                      (*) required only if using MACS as the peak caller.
                                       
     Tool-specific options:
     ======================
@@ -150,6 +173,12 @@ def helpMessage() {
                                       or run 'macs callpeak' on the command line. Please note that the format ="your options" needs to be
                                       strictly adhered to in order to work correctly. [Default: None]
 
+      --seacr_args="[str]"            This option can take any number of options that are compatible with 'seacr' to modify its default
+                                      behaviour. For more detailed information on available options please refer to the Seacr documentation,
+                                      or run 'seacr' on the command line. Please note that the format ="your options" needs to be
+                                      strictly adhered to in order to work correctly. 
+                                      [Default without IgG control: "0.01 norm stringent", Default with IgG control: "norm stringent"]                                      
+
     Other options:
     ==============
 
@@ -157,6 +186,8 @@ def helpMessage() {
 
       --verbose                       More verbose status messages. [Default: OFF]
       --help                          Displays this help message and exits.
+
+      --peak_caller "[str]"           Choose the peak caller. [Default: "macs"] [Available options: "macs" or "seacr"]
 
     Workflow options:
     =================
@@ -176,7 +207,6 @@ def helpMessage() {
       -process.executor=local         Temporarily changes where the workflow is executed to the 'local' machine. See also the nextflow.config
                                       file for more details. [Default: slurm] 
     
-
     <<
     """.stripIndent()
 

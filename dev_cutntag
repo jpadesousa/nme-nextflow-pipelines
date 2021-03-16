@@ -38,6 +38,7 @@ if (params.verbose){
     println ("[WORKFLOW] MULTIQC ARGS: "               + params.multiqc_args)
 }
 
+
 include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 include { getGenome; listGenomes }             from './nf_modules/genomes.mod.nf'
 
@@ -45,6 +46,8 @@ if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
 }
 genome = getGenome(params.genome)
+
+
 
 include { FASTQC }             from './nf_modules/fastqc.mod.nf'
 include { FASTQC as FASTQC2 }  from './nf_modules/fastqc.mod.nf'
@@ -57,6 +60,7 @@ include { BEDTOOLS_GENOMECOV } from './nf_modules/bedtools.mod.nf' params(genome
 include { MULTIQC }            from './nf_modules/multiqc.mod.nf'
 
 file_ch = makeFilesChannel(args)
+
 
 workflow {
 
@@ -72,20 +76,16 @@ workflow {
 
         // merging channels for MultiQC
         multiqc_ch = FASTQC.out.report.mix(
-            TRIM_GALORE.out.report,
-            FASTQ_SCREEN.out.report.ifEmpty([]),
-            FASTQC2.out.report.ifEmpty([]),
-            BOWTIE2.out.stats.ifEmpty([]),
-            MARK_DUPLICATES.out.metrics.ifEmpty([]),
+                     TRIM_GALORE.out.report,
+                     FASTQ_SCREEN.out.report.ifEmpty([]),
+                     FASTQC2.out.report.ifEmpty([]),
+                     BOWTIE2.out.stats.ifEmpty([]),
+                     MARK_DUPLICATES.out.metrics.ifEmpty([]),
         ).collect()
-
-        // multiqc_ch.subscribe {  println "Got: $it"  }
 
         MULTIQC (multiqc_ch, params.outdir, params.multiqc_args, params.verbose)
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -107,11 +107,11 @@ def helpMessage() {
 
     log.info"""
     >>
-
+    
     SYNOPSIS:
 
     In a nutshell, this workflow runs an entire processing pipeline on FastQ files, including QC, contamination QC,
-    quality-/adapter trimming, alignments to a genome using Bowtie 2, sorting, marking duplicates, generating a genome coverage bedgraph, and finally generate an aggregate QC report. The workflow is suitable for CUT&Tag. Here is a graphical representation of the workflow:
+    quality-/adapter trimming, alignments to a genome using Bowtie 2, sorting, marking duplicates, generating a genome coverage bedgraph, and finally generating an aggregate QC report. The workflow is suitable for CUT&Tag. Here is a graphical representation of the workflow:
 
     --- FastQC
     --- FastQ Screen
@@ -128,7 +128,7 @@ def helpMessage() {
 
     * This step runs only once ALL other jobs have completed.
 
-    By default all these steps are submitted as jobs to the ETH Leonhard compute cluster.
+    By default all these steps are submitted as jobs to the ETH Leonhard cluster.
 
     By default, the involved tools are run in the following way:
     ------------------------------------------------------------
@@ -198,6 +198,17 @@ def helpMessage() {
                                       behaviour. For more detailed information on available options please refer to the Samtools documentation,
                                       or run 'samtools sort' on the command line. Please note that the format ="your options" needs to be
                                       strictly adhered to in order to work correctly. [Default: None]
+
+      --mark_duplicates_args="[str]"  This option can take any number of options that are compatible with 'picard MarkDuplicates' to modify its default
+                                      behaviour. For more detailed information on available options please refer to the picard documentation,
+                                      or run 'picard MarkDuplicates' on the command line. Please note that the format ="your options" needs to be
+                                      strictly adhered to in order to work correctly. [Default: None]
+
+      --bedtools_genomecov_args="[str]"  This option can take any number of options that are compatible with 'bedtools genomecov' to modify its default
+                                         behaviour. For more detailed information on available options please refer to the bedtools documentation,
+                                         or run 'bedtools genomecov' on the command line. Please note that the format ="your options" needs to be
+                                         strictly adhered to in order to work correctly. [Default: None]                                      
+
 
     Other options:
     ==============
