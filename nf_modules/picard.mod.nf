@@ -15,19 +15,29 @@ process MARK_DUPLICATES{
 	output:
 		path "*bam", emit: bam
 		path "*txt", emit: metrics
-	 	publishDir "$outputdir", mode: "link", overwrite: true
+
+	 	publishDir "$outputdir/aligned/bam",              mode: "link", overwrite: true, pattern: "*dupflag.bam"
+		publishDir "$outputdir/aligned/bam/deduplicated", mode: "link", overwrite: true, pattern: "*dedup.bam", enabled: params.bam_output
+		publishDir "$outputdir/aligned/logs",             mode: "link", overwrite: true, pattern: "*txt"
 
 	script:
 		if (verbose){
 			println ("[MODULE] MARK_DUPLICATES ARGS: " + mark_duplicates_args)
 		}
+		
+		base_name = bam.toString() - ".sorted.bam"
+
+		if ((mark_duplicates_args =~ /.*REMOVE_DUPLICATES=true.*/)) {
+			output_name = base_name + ".sorted.dedup.bam"
+		} else if (!(mark_duplicates_args =~ /.*REMOVE_DUPLICATES=true.*/) && (mark_duplicates_args =~ /.*REMOVE_SEQUENCING_DUPLICATES=true.*/)) {
+			output_name = base_name + ".sorted.seqdedup.bam"
+		} else {
+			output_name = base_name + ".sorted.dupflag.bam"
+		}
 
 		"""
 		module load picard
 
-		picard MarkDuplicates INPUT=${bam} OUTPUT=${bam}.dedup.bam ASSUME_SORTED=true METRICS_FILE=${bam}.MarkDuplicates.metrics.txt ${mark_duplicates_args}
-
-		rename .bam.dedup .dedup *
-		rename .bam.MarkDuplicates.metrics.txt .MarkDuplicates.metrics.txt *
+		picard MarkDuplicates INPUT=${bam} OUTPUT=${output_name} ASSUME_SORTED=true METRICS_FILE=${base_name}.MarkDuplicates.metrics.txt ${mark_duplicates_args}
 		"""
 }

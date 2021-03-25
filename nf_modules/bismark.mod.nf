@@ -26,7 +26,9 @@ process BISMARK {
 		tuple val(name), path ("*unmapped_reads_1.fq.gz"), optional: true, emit: unmapped1
 		tuple val(name), path ("*unmapped_reads_2.fq.gz"), optional: true, emit: unmapped2
 
-		publishDir "$outputdir", mode: "link", overwrite: true
+		publishDir "$outputdir/aligned/bam", 	 mode: "link", overwrite: true, pattern: "*bam"
+		publishDir "$outputdir/aligned/logs",    mode: "link", overwrite: true, pattern: "*report.txt"
+		publishDir "$outputdir/unaligned/fastq", mode: "link", overwrite: true, pattern: "*.fq.gz"
 
     script:
 		cores = 1

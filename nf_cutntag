@@ -48,18 +48,31 @@ if (params.list_genomes){
 genome = getGenome(params.genome)
 
 
+// ---------------------------------------- //
+// Condition to output the original sorted.bam file only if that file will be subsequently deduplicated
+
+// With deduplication,    outputs:     *.sorted.bam and *.sorted.dedup.bam
+// Without deduplication, outputs:     *.sorted.dupflag.bam
+if ((params.mark_duplicates_args =~ /.*REMOVE_DUPLICATES=true.*/) || (params.mark_duplicates_args =~ /.*REMOVE_SEQUENCING_DUPLICATES=true.*/)){
+        params.bam_output = true
+    } else {
+        params.bam_output = false
+    }
+// ---------------------------------------- //
+
 
 include { FASTQC }             from './nf_modules/fastqc.mod.nf'
 include { FASTQC as FASTQC2 }  from './nf_modules/fastqc.mod.nf'
 include { FASTQ_SCREEN }       from './nf_modules/fastq_screen.mod.nf'
 include { TRIM_GALORE }        from './nf_modules/trim_galore.mod.nf'
-include { BOWTIE2 }            from './nf_modules/bowtie2.mod.nf'  params(genome: genome, cutntag: true)
-include { SAMTOOLS_SORT }      from './nf_modules/samtools.mod.nf'
-include { MARK_DUPLICATES }    from './nf_modules/picard.mod.nf'
+include { BOWTIE2 }            from './nf_modules/bowtie2.mod.nf'  params(bam_output: false, genome: genome, cutntag: true)
+include { SAMTOOLS_SORT }      from './nf_modules/samtools.mod.nf' params(bam_output: params.bam_output)
+include { MARK_DUPLICATES }    from './nf_modules/picard.mod.nf'   params(bam_output: params.bam_output)
 include { BEDTOOLS_GENOMECOV } from './nf_modules/bedtools.mod.nf' params(genome: genome, cutntag: true)
 include { MULTIQC }            from './nf_modules/multiqc.mod.nf'
 
 file_ch = makeFilesChannel(args)
+
 
 
 workflow {

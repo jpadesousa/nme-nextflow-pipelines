@@ -14,7 +14,8 @@ process FASTQC {
 	output:
 	  	tuple val(name), path ("*fastqc*"), emit: all
 		path "*.zip", 						emit: report
-		publishDir "$outputdir", mode: "link", overwrite: true
+		
+		publishDir "$outputdir/unaligned/qc", mode: "link", overwrite: true
 
 	script:
 		if (verbose){

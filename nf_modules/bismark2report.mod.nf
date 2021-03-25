@@ -11,7 +11,8 @@ process BISMARK2REPORT {
 
 	output:
 		path "*html", emit: html
-		publishDir "$outputdir", mode: "link", overwrite: true
+		
+		publishDir "$outputdir/aligned/logs", mode: "link", overwrite: true
 
 	script:
 		if (verbose){

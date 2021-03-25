@@ -15,7 +15,10 @@ process HISAT2 {
 	output:
 		path "*bam",       emit: bam
 		path "*stats.txt", emit: stats
-		publishDir "$outputdir", mode: "link", overwrite: true
+		val(single_end)  , emit: single_end
+		
+		publishDir "$outputdir/aligned/bam",  mode: "link", overwrite: true, pattern: "*bam"
+		publishDir "$outputdir/aligned/logs", mode: "link", overwrite: true, pattern: "*stats.txt"
 
 	script:
 		readString = ""
@@ -31,9 +34,11 @@ process HISAT2 {
 		if (reads instanceof List) {
 			readString = "-1 "+reads[0]+" -2 "+reads[1]
 			hisat_options = hisat_options + " --no-mixed --no-discordant"
+			single_end = false
 		}
 		else {
 			readString = "-U "+reads
+			single_end = true
 		}
 		index = params.genome["hisat2"]
 

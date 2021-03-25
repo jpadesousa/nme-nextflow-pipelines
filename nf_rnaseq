@@ -6,11 +6,21 @@ params.genome     = ""
 params.verbose    = false
 params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically  
 
-params.fastqc_args       = ''
-params.fastq_screen_args = ''
-params.trim_galore_args  = ''
-params.hisat2_args       = ''
-params.multiqc_args      = ''
+params.fastqc_args        = ''
+params.fastq_screen_args  = ''
+params.trim_galore_args   = ''
+params.hisat2_args        = ''
+params.featurecounts_args = ''
+params.multiqc_args       = ''
+
+
+params.strand = "reverse" // default is reverse
+
+// Validate strandedness
+assert params.strand == 'forward' || params.strand == 'reverse' || params.strand == 'unstranded' || params.strand == 'smartseq2' : "Invalid strand orientation option: >>${params.strand}<<. Valid options are: 'forward', 'reverse', 'unstranded' or 'smartseq2'\n\n"
+println ("Using strand orientation: " + params.strand)
+
+
 
 params.help = false
 // Show help message and exit
@@ -25,11 +35,12 @@ if (params.list_genomes){
 }
 
 if (params.verbose){
-    println ("[WORKFLOW] FASTQC ARGS: "           + params.fastqc_args)
-    println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: " + params.fastq_screen_args)
-    println ("[WORKFLOW] TRIM GALORE ARGS: "      + params.trim_galore_args)
-    println ("[WORKFLOW] HISAT2 ARGS ARE: "       + params.hisat2_args)
-    println ("[WORKFLOW] MULTIQC ARGS: "          + params.multiqc_args)
+    println ("[WORKFLOW] FASTQC ARGS: "            + params.fastqc_args)
+    println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: "  + params.fastq_screen_args)
+    println ("[WORKFLOW] TRIM GALORE ARGS: "       + params.trim_galore_args)
+    println ("[WORKFLOW] HISAT2 ARGS ARE: "        + params.hisat2_args)
+    println ("[WORKFLOW] FEATURECOUNTS ARGS ARE: " + params.featurecounts_args)
+    println ("[WORKFLOW] MULTIQC ARGS: "           + params.multiqc_args)
 }
 
 include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
@@ -40,23 +51,29 @@ if (params.list_genomes){
 }
 genome = getGenome(params.genome)
 
-include { FASTQC }            from './nf_modules/fastqc.mod.nf'
-include { FASTQC as FASTQC2 } from './nf_modules/fastqc.mod.nf'
-include { FASTQ_SCREEN }      from './nf_modules/fastq_screen.mod.nf'
-include { TRIM_GALORE }       from'./nf_modules/trim_galore.mod.nf'
-include { HISAT2 }            from './nf_modules/hisat2.mod.nf' params(genome: genome)
-     
+include { FASTQC }                     from './nf_modules/fastqc.mod.nf'
+include { FASTQC as FASTQC2 }          from './nf_modules/fastqc.mod.nf'
+include { FASTQ_SCREEN }               from './nf_modules/fastq_screen.mod.nf'
+include { TRIM_GALORE }                from './nf_modules/trim_galore.mod.nf'
+include { HISAT2 }                     from './nf_modules/hisat2.mod.nf'  params(genome: genome)
+include { FEATURECOUNTS }              from './nf_modules/subread.mod.nf' params(genome: genome, strand: params.strand)
+include { FEATURECOUNTS_MERGE_COUNTS } from './nf_modules/subread.mod.nf'
+
 include { MULTIQC }           from './nf_modules/multiqc.mod.nf' 
 file_ch = makeFilesChannel(args)
 
 workflow {
 
     main:
-        FASTQC         (file_ch, params.outdir, params.fastqc_args, params.verbose)
-        FASTQ_SCREEN   (file_ch, params.outdir, params.fastq_screen_args, params.verbose)
-        TRIM_GALORE    (file_ch, params.outdir, params.trim_galore_args, params.verbose)
-        FASTQC2        (TRIM_GALORE.out.reads, params.outdir, params.fastqc_args, params.verbose)
-        HISAT2         (TRIM_GALORE.out.reads, params.outdir, params.hisat2_args, params.verbose)
+        FASTQC                      (file_ch, params.outdir, params.fastqc_args, params.verbose)
+        FASTQ_SCREEN                (file_ch, params.outdir, params.fastq_screen_args, params.verbose)
+        TRIM_GALORE                 (file_ch, params.outdir, params.trim_galore_args, params.verbose)
+        FASTQC2                     (TRIM_GALORE.out.reads, params.outdir, params.fastqc_args, params.verbose)
+        HISAT2                      (TRIM_GALORE.out.reads, params.outdir, params.hisat2_args, params.verbose)
+        FEATURECOUNTS               (HISAT2.out.bam, HISAT2.out.single_end, params.outdir, params.featurecounts_args, params.verbose)
+
+        featurecounts_merge_counts_ch = FEATURECOUNTS.out.counts.collect()
+        FEATURECOUNTS_MERGE_COUNTS  (featurecounts_merge_counts_ch, params.outdir, params.verbose)
 
         // merging channels for MultiQC
         multiqc_ch = FASTQC.out.report.mix(
@@ -64,6 +81,7 @@ workflow {
             FASTQ_SCREEN.out.report.ifEmpty([]),
             FASTQC2.out.report.ifEmpty([]),
             HISAT2.out.stats.ifEmpty([]),
+            FEATURECOUNTS.out.summary.ifEmpty([]),
         ).collect()
 
         // multiqc_ch.subscribe {  println "Got: $it"  }
@@ -109,6 +127,8 @@ def helpMessage() {
         |
         --- FastQC
         --- HISAT2 
+            |
+            featureCounts
     --- MultiQC*
         
     * This step runs only once ALL other jobs have completed.
@@ -121,6 +141,7 @@ def helpMessage() {
     FastQ Screen:   defaults (Bowtie 2; local mode)
     Trim Galore:    defaults (adapter auto-detection)
     HISAT2:         end-to-end mode ('--no-softclip'); '--no-unal'; for PE files: '--no-mixed --no-discordant' (concordant PE alignmnents only)
+    featureCounts:  defaults (-B -C)
                     
     To add additional parameters to any of the programs, consider supplying tool-specific arguments (see --toolname_args="..." below).
 

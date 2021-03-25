@@ -19,7 +19,8 @@ process FASTQ_SCREEN {
 	  	//path "*png",  emit: png
 	  	path "*html", emit: html
 	  	path "*txt",  emit: report
-		publishDir "$outputdir", mode: "link", overwrite: true
+		  
+		publishDir "$outputdir/unaligned/qc", mode: "link", overwrite: true
 
 	script:
 		if (verbose){

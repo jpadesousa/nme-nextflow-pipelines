@@ -19,7 +19,7 @@ process MACS_CALLPEAK {
 		path "*_pileup.bdg",       emit: pileup_bdg,			optional: true
 		path "*_lambda.bdg",       emit: lambda_bdg,			optional: true
 
-		publishDir "$outputdir",   mode: "link", 				overwrite: true
+		publishDir "$outputdir/aligned/macs", mode: "link", overwrite: true
 
     script:
 

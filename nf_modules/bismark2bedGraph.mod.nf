@@ -18,7 +18,9 @@ process BISMARK2BEDGRAPH {
 	output:
 	    path "*cov.gz",        emit: coverage
 		path "*bedGraph.gz",   emit: bedGraph
-		publishDir "$outputdir", mode: "link", overwrite: true
+
+		publishDir "$outputdir/aligned/methylation_coverage", mode: "link", overwrite: true, pattern: "*cov.gz"
+		publishDir "$outputdir/aligned/methylation_bedgraph", mode: "link", overwrite: true, pattern: "*bedGraph.gz"
 
     script:
 

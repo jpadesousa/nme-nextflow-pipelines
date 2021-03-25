@@ -11,7 +11,8 @@ process SEACR {
 
 	output:
 		path "*bed", emit: bed
-		publishDir "$outputdir", mode: "link", overwrite: true
+		
+		publishDir "$outputdir/aligned/seacr", mode: "link", overwrite: true
 
     script:
 

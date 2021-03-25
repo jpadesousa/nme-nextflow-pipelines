@@ -23,7 +23,9 @@ process COVERAGE2CYTOSINE {
 	output:
 		path "*{report.txt.gz,report.txt}", emit: report
 		path "*{.cov.gz,.cov}",             emit: coverage
-		publishDir "$outputdir", mode: "link", overwrite: true
+
+		publishDir "$outputdir/aligned/logs", 				  mode: "link", overwrite: true, pattern: "*report.txt*"
+		publishDir "$outputdir/aligned/methylation_coverage", mode: "link", overwrite: true, pattern: "*.cov*"
 
 	script:
 		// removing the file extension from the input file name

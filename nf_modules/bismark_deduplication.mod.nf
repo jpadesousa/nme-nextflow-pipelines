@@ -15,7 +15,9 @@ process BISMARK_DEDUPLICATION {
 	output:
 		path "*report.txt",             emit: report
 		tuple val(name), path ("*bam"), emit: bam
-		publishDir "$outputdir", mode: "link", overwrite: true
+		
+		publishDir "$outputdir/aligned/logs",              mode: "link", overwrite: true, pattern: "*report.txt"
+		publishDir "$outputdir/aligned/bam/deduplicated",  mode: "link", overwrite: true, pattern: "*bam"
 
     script:
 		if (verbose){

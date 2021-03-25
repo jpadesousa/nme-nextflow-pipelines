@@ -19,12 +19,16 @@ process BISMARK_METHYLATION_EXTRACTOR {
 		val (verbose)
 
 	output:
-	    tuple val(name), path("CpG*"),          emit: context_files_CG
-		path "CH*",                             emit: context_files_nonCG
+	    tuple val(name), path("CpG*.txt.gz"),   emit: context_files_CG
+		path "CH*.txt.gz",                      emit: context_files_nonCG
 		path "*report.txt",                     emit: report
 		path "*M-bias.txt",                     emit: mbias
 		path "*cov.gz",                         emit: coverage
-		publishDir "$outputdir", mode: "link", overwrite: true
+		
+		publishDir "$outputdir/aligned/methylation_calls",    mode: "link", overwrite: true, pattern: "CpG*.txt.gz"
+		publishDir "$outputdir/aligned/methylation_calls",    mode: "link", overwrite: true, pattern: "CH*.txt.gz"
+		publishDir "$outputdir/aligned/methylation_coverage", mode: "link", overwrite: true, pattern: "*cov.gz"
+		publishDir "$outputdir/aligned/logs", 				  mode: "link", overwrite: true, pattern: "*.txt"
     
 	script:
 		

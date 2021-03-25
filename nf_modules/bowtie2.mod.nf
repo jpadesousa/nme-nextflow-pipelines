@@ -4,6 +4,9 @@ nextflow.enable.dsl=2
 // parameters passed in by specialised pipelines
 params.cutntag = false
 
+// setting if the bam file should be published
+params.bam_output = true
+
 process BOWTIE2 {
 
 		label 'bowtie2'
@@ -18,7 +21,9 @@ process BOWTIE2 {
 	output:
 		path "*bam",  	   emit: bam
 		path "*stats.txt", emit: stats
-		publishDir "$outputdir", mode: "link", overwrite: true
+
+		publishDir "$outputdir/aligned/bam",  mode: "link", overwrite: true, pattern: "*bam", enabled: params.bam_output
+		publishDir "$outputdir/aligned/logs", mode: "link", overwrite: true, pattern: "*stats.txt"
 
 	script:
 		readString = ""

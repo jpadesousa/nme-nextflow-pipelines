@@ -24,7 +24,9 @@ process TRIM_GALORE {
 	output:
 		tuple val(name), path("*fq.gz"), 			 emit: reads
 		path "*trimming_report.txt", optional: true, emit: report
-		publishDir "$outputdir", mode: "link", overwrite: true
+		
+		publishDir "$outputdir/unaligned/fastq", mode: "link", overwrite: true, pattern: "*fq.gz"
+		publishDir "$outputdir/unaligned/logs",  mode: "link", overwrite: true, pattern: "*trimming_report.txt"
 
 	script:
 		if (verbose){

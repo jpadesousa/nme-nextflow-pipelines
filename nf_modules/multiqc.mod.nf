@@ -13,6 +13,7 @@ process MULTIQC {
 
 	output:
 		path "*html", emit: html
+		
 		publishDir "$outputdir", mode: "link", overwrite: true
 
 	script:
