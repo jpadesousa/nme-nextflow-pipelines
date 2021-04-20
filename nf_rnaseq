@@ -194,6 +194,13 @@ def helpMessage() {
                                       to the HISAT2 User Guide, or run 'hisat2 --help' on the command line. As an example, to disable
                                       spliced alignments and tolerate a miximum fragment length of 1500 bp, use: 
                                       ' --hisat2_args="--no-spliced-alignment --maxins 1500" '. [Default: None]
+
+      --featurecounts_args="[str]"    This option can take any number of options that are compatible with featureCounts to modify its
+                                      default mapping behaviour. For more detailed information on available options please refer
+                                      to the featureCounts User Guide, or run 'featureCounts --help' on the command line. 
+                                      As an example, to change the minimum number of overlapping bases in a read
+                                      that is required for read assignment to 5, use: 
+                                      ' --featurecounts_args="--minOverlap 5" '. [Default: --minOverlap 1]
    
     Other options:
     ==============

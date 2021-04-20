@@ -40,21 +40,17 @@ process SEACR {
 			}
 		}
 
-
-
         if(!(seacr_args =~ /.*norm.*|.*non.*/)){
             seacr_normalization = "norm"
         } else {
-			seacr_normalization = "non"
+			seacr_normalization = (seacr_args =~ /norm|non/)[0]
 		}
 
         if(!(seacr_args =~ /.*relaxed.*|.*stringent.*/)){
             seacr_mode = "stringent"
         } else {
-			seacr_mode = "relaxed"
+			seacr_mode = (seacr_args =~ /relaxed|stringent/)[0]
 		}
-
-
 
 		"""
 		module load seacr
