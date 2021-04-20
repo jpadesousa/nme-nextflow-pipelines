@@ -1,7 +1,14 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.outdir     = "./results"
+// Output directory
+params.outdir = false
+if(params.outdir){
+    outdir = params.outdir + '/results'
+} else {
+    outdir = './results'
+}
+
 params.genome     = ""
 params.verbose    = false
 params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically
@@ -64,13 +71,13 @@ file_ch = makeFilesChannel(args)
 workflow {
 
     main:
-        FASTQC                         (file_ch, params.outdir, params.fastqc_args, params.verbose)
-        TRIM_GALORE                    (file_ch, params.outdir, params.trim_galore_args, params.verbose)
-        FASTQ_SCREEN                   (TRIM_GALORE.out.reads, params.outdir, params.fastq_screen_args, params.verbose)
-        FASTQC2                        (TRIM_GALORE.out.reads, params.outdir, params.fastqc_args, params.verbose)
-        BISMARK                        (TRIM_GALORE.out.reads, params.outdir, params.bismark_args, params.verbose)
+        FASTQC                         (file_ch, outdir, params.fastqc_args, params.verbose)
+        TRIM_GALORE                    (file_ch, outdir, params.trim_galore_args, params.verbose)
+        FASTQ_SCREEN                   (TRIM_GALORE.out.reads, outdir, params.fastq_screen_args, params.verbose)
+        FASTQC2                        (TRIM_GALORE.out.reads, outdir, params.fastqc_args, params.verbose)
+        BISMARK                        (TRIM_GALORE.out.reads, outdir, params.bismark_args, params.verbose)
         // Skipping deduplication step
-        BISMARK_METHYLATION_EXTRACTOR  (BISMARK.out.bam, params.outdir, params.bismark_methylation_extractor_args, params.verbose)
+        BISMARK_METHYLATION_EXTRACTOR  (BISMARK.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
 
         // merging channels for MultiQC
         multiqc_ch = FASTQC.out.report.mix(
@@ -91,9 +98,9 @@ workflow {
 
         // bismark_report_ch.subscribe {  println "Got: $it"  }
 
-        BISMARK2REPORT                   (bismark_report_ch, params.outdir, params.bismark2report_args, params.verbose)
-        BISMARK2SUMMARY                  (bismark_report_ch, params.outdir, params.bismark2summary_args, params.verbose)
-        MULTIQC                          (multiqc_ch, params.outdir, params.multiqc_args, params.verbose)
+        BISMARK2REPORT                   (bismark_report_ch, outdir, params.bismark2report_args, params.verbose)
+        BISMARK2SUMMARY                  (bismark_report_ch, outdir, params.bismark2summary_args, params.verbose)
+        MULTIQC                          (multiqc_ch, outdir, params.multiqc_args, params.verbose)
 
 }
 

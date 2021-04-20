@@ -1,7 +1,14 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.outdir       = "./results"
+// Output directory
+params.outdir = false
+if(params.outdir){
+    outdir = params.outdir + '/results'
+} else {
+    outdir = './results'
+}
+
 params.genome       = ""
 params.bowtie2_args = ''
 params.verbose      = false
@@ -40,7 +47,7 @@ file_ch = makeFilesChannel(args)
 workflow {
 
     main:
-        BOWTIE2(file_ch, params.outdir, params.bowtie2_args, params.verbose)
+        BOWTIE2(file_ch, outdir, params.bowtie2_args, params.verbose)
     
 }
 

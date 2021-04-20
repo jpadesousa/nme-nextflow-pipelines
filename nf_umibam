@@ -3,7 +3,14 @@ nextflow.enable.dsl=2
 
 // last modified 01 March 2021
 
-params.outdir     = "./results"
+// Output directory
+params.outdir = false
+if(params.outdir){
+    outdir = params.outdir + '/results'
+} else {
+    outdir = './results'
+}
+
 params.verbose    = false
 params.single_end = false
 
@@ -33,7 +40,7 @@ file_ch = Channel .fromPath(args)    // UmiBam expects just the path to be passe
 workflow {
     // file_ch.view()
     main:
-        UMIBAM (file_ch, params.outdir, params.umibam_args, params.verbose)
+        UMIBAM (file_ch, outdir, params.umibam_args, params.verbose)
 
 }
 

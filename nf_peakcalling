@@ -1,7 +1,14 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.outdir     = "./results"
+// Output directory
+params.outdir = false
+if(params.outdir){
+    outdir = params.outdir + '/results'
+} else {
+    outdir = './results'
+}
+
 params.genome     = ""
 params.verbose    = false
 
@@ -70,7 +77,7 @@ else if (params.peak_caller == 'seacr'){
 if(args[0].endsWith('.csv')){
 
     Channel.fromPath(args)
-    	     .splitCsv(header: true, sep: ',')
+    	   .splitCsv(header: true, sep: ',')
            .map { row -> [ file(row.treatment, checkIfExists: true), file(row.control, checkIfExists: true) ] }
            .set { files_ch }
 
@@ -87,10 +94,10 @@ workflow {
 
     main:
         if (params.peak_caller == 'macs'){
-            MACS_CALLPEAK  (files_ch, params.outdir, params.macs_callpeak_args, params.verbose)
+            MACS_CALLPEAK  (files_ch, outdir, params.macs_callpeak_args, params.verbose)
         }
         else if (params.peak_caller == 'seacr'){
-            SEACR          (files_ch, params.outdir, params.seacr_args, params.verbose)
+            SEACR          (files_ch, outdir, params.seacr_args, params.verbose)
         }
 
 }

@@ -1,7 +1,14 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.outdir     = "./results"
+// Output directory
+params.outdir = false
+if(params.outdir){
+    outdir = params.outdir + '/results'
+} else {
+    outdir = './results'
+}
+
 params.genome     = ""
 params.verbose    = false
 params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically  
@@ -30,8 +37,8 @@ file_ch = Channel.fromPath(args)     // UmiBam expects just the path to be passe
 workflow {
 
     main:
-        SAMTOOLS_SORT  (file_ch, params.outdir, params.samtools_sort_args, params.verbose)
-        SAMTOOLS_INDEX (SAMTOOLS_SORT.out.bam, params.outdir, params.samtools_sort_args, params.verbose)
+        SAMTOOLS_SORT  (file_ch, outdir, params.samtools_sort_args, params.verbose)
+        SAMTOOLS_INDEX (SAMTOOLS_SORT.out.bam, outdir, params.samtools_sort_args, params.verbose)
 }
 
 // Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a

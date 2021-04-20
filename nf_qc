@@ -1,7 +1,14 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.outdir     = "./results"
+// Output directory
+params.outdir = false
+if(params.outdir){
+    outdir = params.outdir + '/results'
+} else {
+    outdir = './results'
+}
+
 params.genome     = ""
 params.verbose    = false
 params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically  
@@ -33,8 +40,8 @@ file_ch = makeFilesChannel(args)
 workflow {
 
     main:
-        FASTQC       (file_ch, params.outdir, params.fastqc_args, params.verbose)
-        FASTQ_SCREEN (file_ch, params.outdir, params.fastq_screen_args, params.verbose)
+        FASTQC       (file_ch, outdir, params.fastqc_args, params.verbose)
+        FASTQ_SCREEN (file_ch, outdir, params.fastq_screen_args, params.verbose)
         
         // merging channels for MultiQC
         multiqc_ch = FASTQC.out.report.mix(
@@ -42,7 +49,7 @@ workflow {
         ).collect()
 
         // multiqc_ch.subscribe {  println "Got: $it"  }
-        MULTIQC      (multiqc_ch, params.outdir, params.multiqc_args, params.verbose)
+        MULTIQC      (multiqc_ch, outdir, params.multiqc_args, params.verbose)
 
 }
 

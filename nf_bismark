@@ -1,7 +1,14 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.outdir       = "./results"
+// Output directory
+params.outdir = false
+if(params.outdir){
+    outdir = params.outdir + '/results'
+} else {
+    outdir = './results'
+}
+
 params.genome       = ""
 params.verbose      = false
 params.bismark_args = ''
@@ -39,7 +46,7 @@ file_ch = makeFilesChannel(args)
 
 workflow {
     main:
-        BISMARK(file_ch, params.outdir, params.bismark_args, params.verbose)
+        BISMARK(file_ch, outdir, params.bismark_args, params.verbose)
 }
 
 // Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
