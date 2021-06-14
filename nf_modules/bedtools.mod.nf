@@ -3,7 +3,6 @@ nextflow.enable.dsl=2
 
 process BEDTOOLS_GENOMECOV{	
     
-	label 'bedtools'
 	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
@@ -25,7 +24,7 @@ process BEDTOOLS_GENOMECOV{
 		}
 
         if (params.cutntag) {
-			bedtools_genomecov_options += " -bga " // Bedtools genomecov parameters for the CUT&Tag pipeline
+			bedtools_genomecov_options += " -bga " // bedtools genomecov parameters for the CUT&Tag pipeline
 		}
 
 		"""
