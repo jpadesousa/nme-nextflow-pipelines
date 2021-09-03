@@ -39,6 +39,6 @@ process FASTQ_SCREEN {
 
 		"""
 		module load fastq-screen
-		fastq_screen $params.bisulfite $fastq_screen_args $reads
+		fastq_screen --conf /cluster/work/nme/software/config/fastq_screen.conf $params.bisulfite $fastq_screen_args $reads
 		"""
 }
