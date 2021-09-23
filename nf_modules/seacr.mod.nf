@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process SEACR {	
 
 	input:
@@ -15,12 +19,12 @@ process SEACR {
 		publishDir "$outputdir/aligned/seacr", mode: "link", overwrite: true
 
     script:
-
+		// Verbose
 		if (verbose){
 			println ("[MODULE] SEACR ARGS: " + seacr_args)
 		}
 
-
+		// File names, output name, and suffix
 		if (bedgraph instanceof List) {
 			files_command   = bedgraph[0] + " " + bedgraph[1]
 			output_name     = bedgraph[0].toString() - ".bedgraph"
@@ -40,12 +44,14 @@ process SEACR {
 			}
 		}
 
+		// Normalization
         if(!(seacr_args =~ /.*norm.*|.*non.*/)){
             seacr_normalization = "norm"
         } else {
 			seacr_normalization = (seacr_args =~ /norm|non/)[0]
 		}
 
+		// Mode
         if(!(seacr_args =~ /.*relaxed.*|.*stringent.*/)){
             seacr_mode = "stringent"
         } else {
@@ -54,6 +60,7 @@ process SEACR {
 
 		"""
 		module load seacr
+
         seacr ${files_command} ${seacr_threshold} ${seacr_normalization} ${seacr_mode} "${output_name}${output_suffix}"
     	"""
 }

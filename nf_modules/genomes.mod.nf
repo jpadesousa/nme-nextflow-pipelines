@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    FUNCTIONS
+======================================================================================== */
 def getGenome(name) {
 
     // Find a file with the same name as the genome in our genomes.d directory

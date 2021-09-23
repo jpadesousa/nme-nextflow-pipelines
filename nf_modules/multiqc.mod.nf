@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process MULTIQC {
 
 	label 'multiQC'
@@ -14,17 +18,17 @@ process MULTIQC {
 	output:
 		path "*html", emit: html
 		
-		publishDir "$outputdir", mode: "link", overwrite: true
+		publishDir "$outputdir/qc", mode: "link", overwrite: true
 
 	script:
-
+		// Verbose
 		if (verbose){
 			println ("[MODULE] MULTIQC ARGS: " + multiqc_args)
 		}
 
 		"""
 		module load multiqc
+
 		multiqc $multiqc_args -x work .
 		"""
-
 }

@@ -1,23 +1,33 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// Output directory
+
+/* ========================================================================================
+    OUTPUT DIRECTORY
+======================================================================================== */
 params.outdir = false
+
 if(params.outdir){
     outdir = params.outdir + '/results'
 } else {
     outdir = './results'
 }
 
-params.genome       = ""
-params.verbose      = false
+
+/* ========================================================================================
+    PARAMETERS
+======================================================================================== */
+params.genome       = ''
 params.bismark_args = ''
+params.verbose      = false
+params.list_genomes = false
 params.single_end   = false // default mode is auto-detect. NOTE: params are handed over automatically
-
-params.list_genomes = false;
-
-
 params.help         = false
+
+
+/* ========================================================================================
+    MESSAGES
+======================================================================================== */
 // Show help message and exit
 if (params.help){
     helpMessage()
@@ -32,17 +42,29 @@ if (params.verbose){
     println ("[WORKFLOW] BISMARK ARGS ARE: " + params.bismark_args)
 }
 
-include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
-include { getGenome; listGenomes}              from './nf_modules/genomes.mod.nf'
+
+/* ========================================================================================
+    GENOMES
+======================================================================================== */
+include { getGenome; listGenomes} from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
 }
-
 genome = getGenome(params.genome)
-include { BISMARK }                             from './nf_modules/bismark.mod.nf' params(genome: genome)
 
+
+/* ========================================================================================
+    FILES CHANNEL
+======================================================================================== */
+include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 file_ch = makeFilesChannel(args)
+
+
+/* ========================================================================================
+    WORKFLOW
+======================================================================================== */
+include { BISMARK } from './nf_modules/bismark.mod.nf' params(genome: genome)
 
 workflow {
     main:
@@ -68,6 +90,10 @@ workflow.onComplete {
     sendMail(to: "${workflow.userName}@ethz.ch", subject: 'Minimal pipeline execution report', body: msg)
 }
 
+
+/* ========================================================================================
+    HELP MESSAGE
+======================================================================================== */
 def helpMessage() {
  
     log.info"""
@@ -77,7 +103,7 @@ def helpMessage() {
     SYNOPSIS:
 
     This workflow takes in a list of filenames (in FastQ format), and aligns these files to a genome using Bismark using the
-    stone compute cluster at Babraham.
+    Euler cluster at ETH Zurich.
 
     If you run Bismark in this stand-alone workflow it is assumed that you know what you are doing, e.g. raw FastQ files should
     have been trimmed appropriately. If called as is, Bismark is run in default mode. To add additional parameters, please 
@@ -97,7 +123,7 @@ def helpMessage() {
       <input files>                   List of input files, e.g. '*fastq.gz' or '*fq.gz'. In theory, files will automatically be
                                       processed as single-end or paired end files (if file pairs share the same base-name, and
                                       differ only by a different read number, e.g. 'base_name_R1.fastq.gz' and 'base_name_R2.fastq.gz'
-                                      (, or R3, R4). To run paired-end files in single-end mode, please see '--single_end' below.
+                                      (or R3, R4). To run paired-end files in single-end mode, please see '--single_end' below.
 
       --genome [str]                  Genome build ID to be used for the alignment, e.g. GRCh38 (latest human genome) or GRCm38
                                       (latest mouse genome build). To list all available genomes, see '--list_genomes' below.
@@ -113,6 +139,7 @@ def helpMessage() {
                                       note that the format ="your options" needs to be strictly adhered to in order to work correctly.
                                       [Default: None]
 
+
     Other Options:
     ==============
 
@@ -127,6 +154,7 @@ def helpMessage() {
       --verbose                       More verbose status messages. [Default: OFF]
       --help                          Displays this help message and exits.
 
+
     Workflow Options:
     =================
 
@@ -138,15 +166,13 @@ def helpMessage() {
 
       -bg                             Sends the entire workflow into the background, thus disconnecting it from the terminal session.
                                       This option launches a daemon process (which will keep running on the headnode) that watches over
-                                      your workflow, and submits new jobs to the SLURM queue as required. Use this option for big pipeline
+                                      your workflow, and submits new jobs to the LSF queue as required. Use this option for big pipeline
                                       jobs, or whenever you do not want to watch the status progress yourself. Upon completion, the
                                       pipeline will send you an email with the job details. This option is HIGHLY RECOMMENDED!
 
       -process.executor=local         Temporarily changes where the workflow is executed to the 'local' machine. Please also see the Nextflow
-                                      config file for details. [Default: slurm] 
+                                      config file for details. [Default: lsf] 
     
-
     <<
     """.stripIndent()
-
 }

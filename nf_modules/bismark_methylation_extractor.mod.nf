@@ -1,12 +1,20 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
 params.singlecell = false
 params.rrbs       = false
 params.verbose    = false
 params.pbat       = false
 params.nonCG      = false
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process BISMARK_METHYLATION_EXTRACTOR {
 	
 	label 'BismarkMethylationExtractor'
@@ -31,49 +39,53 @@ process BISMARK_METHYLATION_EXTRACTOR {
 		publishDir "$outputdir/aligned/logs", 				  mode: "link", overwrite: true, pattern: "*.txt"
     
 	script:
-		
+		// Verbose
 		if (verbose){
 			println ("[MODULE] BISMARK METHYLATION EXTRACTOR ARGS: " + bismark_methylation_extractor_args)
 		}
 
-
-		// Options we add are
-		methXtract_options = bismark_methylation_extractor_args + " --gzip "
+		// Default options
+		bismark_methylation_extractor_args = bismark_methylation_extractor_args + " --gzip "
 		
+		// Single-cell
 		if (params.singlecell){
-			// println ("FLAG SINGLE CELL SPECIFIED: PROCESSING ACCORDINGLY")
+			println ("FLAG SINGLE CELL SPECIFIED: PROCESSING ACCORDINGLY")
 		}
 
+		// Non-CpG methylation
 		if (params.nonCG){
 			if (verbose){
 				println ("FLAG nonCG specified: adding flag --CX ")
 			}
-			methXtract_options +=  " --CX "
+			bismark_methylation_extractor_args +=  " --CX "
 		}
 
+		// Paired-end
 		isPE = isPairedEnd(bam)
 		if (isPE){
-			// not perform any ignoring behaviour for RRBS or single-cell libraries
-			if (!params.rrbs && !params.singlecell && !params.pbat){
-				// default ignore parameters for paired-end libraries
-				methXtract_options +=  " --ignore_r2 2 "
+			if (!params.rrbs && !params.singlecell && !params.pbat){ // not perform any ignoring behaviour for RRBS or single-cell libraries
+				bismark_methylation_extractor_args +=  " --ignore_r2 2 "
 			}
 		}
-		else{
-			// println("File seems to be single-end")
+		else {
+			println("File seems to be single-end")
 		}
-
-		// println ("Now running command: bismark_methylation_extractor -parallel ${task.cpus} ${methXtract_options} ${bam}")
+		
 		"""
 		module load bismark
-		bismark_methylation_extractor --bedGraph --buffer 10G -parallel ${task.cpus} ${methXtract_options} ${bam}
+
+		bismark_methylation_extractor --bedGraph --buffer 10G -parallel ${task.cpus} ${bismark_methylation_extractor_args} ${bam}
 		"""
 
 }
 
+
+/* ========================================================================================
+    FUNCTIONS
+======================================================================================== */
 def isPairedEnd(bamfile) {
 
-	// need to transform the nextflow.processor.TaskPath object to String
+	// Transforms the nextflow.processor.TaskPath object to String
 	bamfile = bamfile.toString()
 	if (params.verbose){
 		println ("Processing file: " + bamfile)

@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process FEATURECOUNTS {	
 
     label "featureCounts"
@@ -20,18 +24,17 @@ process FEATURECOUNTS {
 	 	publishDir "$outputdir/aligned/counts", mode: "link", overwrite: true
 
 	script:
+        // Verbose
 		if (verbose){
 			println ("[MODULE] FEATURECOUNTS ARGS: " + featurecounts_args)
 		}
 
-        // Default options:
-
-        // -B  Only count read pairs that have both ends aligned.
-        // -C  Do not count read pairs that have their two ends mapping
-        //     to different chromosomes or mapping to same chromosome
-        //     but on different strands.
+        // Default options
+            // -B  Only count read pairs that have both ends aligned.
+            // -C  Do not count read pairs that have their two ends mapping
+            //     to different chromosomes or mapping to same chromosome
+            //     but on different strands.
         featurecounts_args = featurecounts_args + " -B -C "
-
 
         // Strandedness
         if (params.strand == 'forward') {
@@ -42,13 +45,13 @@ process FEATURECOUNTS {
             strandedness = 0
         }
 
-        // Paired-end or single-end?
+        // Paired-end or single-end
         paired_end = single_end ? '' : '-p'
 
-        // prefix
-        output_name = bam.toString() - ".bam"
+        // Basename
+        basename = bam.toString() - ".bam"
 
-        // annotation file
+        // Annotation file
         annotation = params.genome["gtf"]
         
 		"""
@@ -60,7 +63,7 @@ process FEATURECOUNTS {
             -T $task.cpus \\
             -a $annotation \\
             -s $strandedness \\
-            -o ${output_name}.featureCounts.txt \\
+            -o ${basename}.featureCounts.txt \\
             ${bam}
 		"""
 }
@@ -69,23 +72,27 @@ process FEATURECOUNTS {
 process FEATURECOUNTS_MERGE_COUNTS {
 
     input:
-    path('counts/*')
-    val(outputdir)
-	val(verbose)
+        path('counts/*')
+        val(outputdir)
+        val(verbose)
 
     output:
-    path "*.txt", emit: merged_counts
-    publishDir "$outputdir/aligned/counts", mode: "link", overwrite: true
+        path "*.txt", emit: merged_counts
+
+        publishDir "$outputdir/aligned/counts", mode: "link", overwrite: true
 
     script:
     """
     mkdir -p tmp/counts
+
     cut -f 1 `ls ./counts/* | head -n 1` | grep -v "^#" > ids.tsv
+
     for fileid in `ls ./counts/*featureCounts.txt`; do
         samplename=`basename \$fileid | sed s/\\.featureCounts.txt\$//g`
         echo \$samplename > tmp/counts/\$samplename.featureCounts.txt
         grep -v "^#" \${fileid} | cut -f 7 | tail -n+2 >> tmp/counts/\$samplename.featureCounts.txt
     done
+    
     paste ids.tsv tmp/counts/* > gene_counts_merged.txt
     """
 }

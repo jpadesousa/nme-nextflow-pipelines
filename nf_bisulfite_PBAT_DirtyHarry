@@ -1,11 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// Last modified 24 02 2021
-// This pipeline will first run paired-end alignments, with --unmapped specified, and then
-// run single-end alignments afterwards
 
-// Output directory
+/* ========================================================================================
+    OUTPUT DIRECTORY
+======================================================================================== */
 params.outdir = false
 if(params.outdir){
     outdir = params.outdir + '/results'
@@ -13,12 +12,12 @@ if(params.outdir){
     outdir = './results'
 }
 
-params.genome = ""
 
+/* ========================================================================================
+    PARAMETERS
+======================================================================================== */
+params.genome = ''
 params.pbat   = '9' // default is 9, but this can be changed
-
-params.verbose    = false
-params.single_end = false  // default mode is auto-detect. NOTE: params are handed over automatically
 
 params.fastqc_args                        = ''
 params.fastq_screen_args                  = ''
@@ -31,15 +30,21 @@ params.bismark2summary_args               = ''
 params.bismark2report_args                = ''
 params.multiqc_args                       = ''
 
+params.verbose      = false
+params.single_end   = false  // default mode is auto-detect. NOTE: params are handed over automatically
+params.help         = false
+params.list_genomes = false
 
-params.help = false
+
+/* ========================================================================================
+    MESSAGES
+======================================================================================== */
 // Show help message and exit
 if (params.help){
     helpMessage()
     exit 0
 }
 
-params.list_genomes = false;
 if (params.list_genomes){
     println ("[WORKLFOW] List genomes selected")
 }
@@ -53,44 +58,55 @@ if (params.verbose){
     println ("[WORKFLOW] BISMARK METHYLATION EXTRACTOR ARGS ARE: " + params.bismark_methylation_extractor_args)
 }
 
-include { makeFilesChannel; getFileBaseNames }  from './nf_modules/files.mod.nf'
+
+/* ========================================================================================
+    GENOMES
+======================================================================================== */
 include { getGenome; listGenomes }              from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
 }
-
 genome = getGenome(params.genome)
 
-include { FASTQC }                               from './nf_modules/fastqc.mod.nf'                         
-include { FASTQC as FASTQC2 }                    from './nf_modules/fastqc.mod.nf' 
 
-include { FASTQ_SCREEN }                         from './nf_modules/fastq_screen.mod.nf' params(bisulfite: '--bisulfite')
+/* ========================================================================================
+    FILES CHANNEL
+======================================================================================== */
+include { makeFilesChannel; getFileBaseNames }  from './nf_modules/files.mod.nf'
+file_ch = makeFilesChannel(args)
+
+
+/* ========================================================================================
+    WORKFLOW
+======================================================================================== */
+include { FASTQC }                                            from './nf_modules/fastqc.mod.nf'                         
+include { FASTQC as FASTQC2 }                                 from './nf_modules/fastqc.mod.nf' 
+
+include { FASTQ_SCREEN }                                      from './nf_modules/fastq_screen.mod.nf' params(bisulfite: '--bisulfite')
 
 // Adding pbat flag for PBAT processing. For Trim Galore we pass on the number of bp that need to be clipped at the 5' end
-include { TRIM_GALORE }                          from './nf_modules/trim_galore.mod.nf' params(pbat: params.pbat)
+include { TRIM_GALORE }                                       from './nf_modules/trim_galore.mod.nf' params(pbat: params.pbat)
 // Adding pbat flag for PBAT processing
-include { BISMARK }                              from './nf_modules/bismark.mod.nf' params(genome: genome, pbat: true, unmapped: true)
-include { BISMARK as BISMARK_UN1 }               from './nf_modules/bismark.mod.nf' params(genome: genome, pbat: true, read_identity: "1")
-include { BISMARK as BISMARK_UN2 }               from './nf_modules/bismark.mod.nf' params(genome: genome, read_identity: "2")
+include { BISMARK }                                           from './nf_modules/bismark.mod.nf' params(genome: genome, pbat: true, unmapped: true)
+include { BISMARK as BISMARK_UN1 }                            from './nf_modules/bismark.mod.nf' params(genome: genome, pbat: true, read_identity: "1")
+include { BISMARK as BISMARK_UN2 }                            from './nf_modules/bismark.mod.nf' params(genome: genome, read_identity: "2")
 
-include { BISMARK_DEDUPLICATION }                from './nf_modules/bismark_deduplication.mod.nf'
-include { BISMARK_DEDUPLICATION as BISMARK_DEDUP1}    from './nf_modules/bismark_deduplication.mod.nf'
-include { BISMARK_DEDUPLICATION as BISMARK_DEDUP2}    from './nf_modules/bismark_deduplication.mod.nf'
+include { BISMARK_DEDUPLICATION }                             from './nf_modules/bismark_deduplication.mod.nf'
+include { BISMARK_DEDUPLICATION as BISMARK_DEDUP1}            from './nf_modules/bismark_deduplication.mod.nf'
+include { BISMARK_DEDUPLICATION as BISMARK_DEDUP2}            from './nf_modules/bismark_deduplication.mod.nf'
 
 // Adding pbat flag for PBAT processing
-include { BISMARK_METHYLATION_EXTRACTOR }        from './nf_modules/bismark_methylation_extractor.mod.nf' params(pbat: true)
+include { BISMARK_METHYLATION_EXTRACTOR }                     from './nf_modules/bismark_methylation_extractor.mod.nf' params(pbat: true)
 include { BISMARK_METHYLATION_EXTRACTOR as METHXTRACT_UN1 }   from './nf_modules/bismark_methylation_extractor.mod.nf'
 include { BISMARK_METHYLATION_EXTRACTOR as METHXTRACT_UN2 }   from './nf_modules/bismark_methylation_extractor.mod.nf'
 
-include { BISMARK2BEDGRAPH }                     from './nf_modules/bismark2bedGraph.mod.nf' params(dirty_harry: true)
+include { BISMARK2BEDGRAPH }                                  from './nf_modules/bismark2bedGraph.mod.nf' params(dirty_harry: true)
 
-include { BISMARK2REPORT }                       from './nf_modules/bismark2report.mod.nf'
-include { BISMARK2SUMMARY }                      from './nf_modules/bismark2summary.mod.nf'
+include { BISMARK2REPORT }                                    from './nf_modules/bismark2report.mod.nf'
+include { BISMARK2SUMMARY }                                   from './nf_modules/bismark2summary.mod.nf'
 
-include { MULTIQC }                              from './nf_modules/multiqc.mod.nf' 
-
-file_ch = makeFilesChannel(args)
+include { MULTIQC }                                           from './nf_modules/multiqc.mod.nf' 
 
 workflow {
 
@@ -196,11 +212,14 @@ workflow.onComplete {
     sendMail(to: "${workflow.userName}@ethz.ch", subject: 'Minimal pipeline execution report', body: msg)
 }
 
+
+/* ========================================================================================
+    HELP MESSAGE
+======================================================================================== */
 def helpMessage() {
  
     log.info"""
     >>
-
 
     SYNOPSIS:
     PBAT - Dirty Harry: an abomination for paired-end data...
@@ -251,7 +270,7 @@ def helpMessage() {
         
     * These steps run only once ALL other jobs have completed.
      
-    By default all these steps are submitted as jobs to the Babraham stone compute cluster.
+    By default all these steps are submitted as jobs to the Euler cluster at ETH Zurich.
 
     By default, the involved tools are run in the following way:
     ------------------------------------------------------------
@@ -266,7 +285,7 @@ def helpMessage() {
     To add additional parameters to any of the programs, consider supplying tool-specific arguments (see --toolname_args="..." below).
 
 
-            ==============================================================================================================
+    ==============================================================================================================
 
 
     USAGE:
@@ -349,6 +368,7 @@ def helpMessage() {
       --verbose                       More verbose status messages. [Default: OFF]
       --help                          Displays this help message and exits.
 
+
     Workflow options:
     =================
 
@@ -360,15 +380,13 @@ def helpMessage() {
 
       -bg                             Sends the entire workflow into the background, thus disconnecting it from the terminal session.
                                       This option launches a daemon process (which will keep running on the headnode) that watches over
-                                      your workflow, and submits new jobs to the SLURM queue as required. Use this option for big pipeline
+                                      your workflow, and submits new jobs to the LSF queue as required. Use this option for big pipeline
                                       jobs, or whenever you do not want to watch the status progress yourself. Upon completion, the
                                       pipeline will send you an email with the job details. This option is HIGHLY RECOMMENDED!
 
       -process.executor=local         Temporarily changes where the workflow is executed to the 'local' machine. See also Nextflow config
-                                      file for more details. [Default: slurm] 
+                                      file for more details. [Default: lsf] 
     
-
     <<
     """.stripIndent()
-
 }

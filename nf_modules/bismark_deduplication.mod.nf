@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process BISMARK_DEDUPLICATION {
 	
 	label 'bismarkDeduplication'
@@ -15,21 +19,22 @@ process BISMARK_DEDUPLICATION {
 	output:
 		path "*report.txt",             emit: report
 		tuple val(name), path ("*bam"), emit: bam
-		
+
 		publishDir "$outputdir/aligned/logs",              mode: "link", overwrite: true, pattern: "*report.txt"
 		publishDir "$outputdir/aligned/bam/deduplicated",  mode: "link", overwrite: true, pattern: "*bam"
 
     script:
+		// Verbose
 		if (verbose){
 			println ("[MODULE] BISMARK DEDUPLICATION ARGS: " + deduplicate_bismark_args)
 		}
 
-		// Options we add are
-		deduplication_options = deduplicate_bismark_args
-		deduplication_options += " --bam "
+		// Default options
+		deduplicate_bismark_args += " --bam "
 
 		"""
 		module load bismark
-		deduplicate_bismark ${deduplication_options} ${bam}
+
+		deduplicate_bismark ${deduplicate_bismark_args} ${bam}
 		"""
 }

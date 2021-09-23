@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process MARK_DUPLICATES{	
 
 	label 'picard'
@@ -21,12 +25,15 @@ process MARK_DUPLICATES{
 		publishDir "$outputdir/aligned/logs",             mode: "link", overwrite: true, pattern: "*txt"
 
 	script:
+		// Verbose
 		if (verbose){
 			println ("[MODULE] MARK_DUPLICATES ARGS: " + mark_duplicates_args)
 		}
 		
+		// Basename
 		base_name = bam.toString() - ".sorted.bam"
 
+		// Mark duplicates
 		if ((mark_duplicates_args =~ /.*REMOVE_DUPLICATES=true.*/)) {
 			output_name = base_name + ".sorted.dedup.bam"
 		} else if (!(mark_duplicates_args =~ /.*REMOVE_DUPLICATES=true.*/) && (mark_duplicates_args =~ /.*REMOVE_SEQUENCING_DUPLICATES=true.*/)) {

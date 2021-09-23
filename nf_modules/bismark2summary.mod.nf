@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process BISMARK2SUMMARY {
 
 	input:
@@ -21,12 +25,14 @@ process BISMARK2SUMMARY {
 		// https://github.com/nextflow-io/nextflow/issues/1519
 		bismark2summary_args = bismark2summary_args.replaceAll(/'/,"")
 		
+		// Verbose
 		if (verbose){
 			println ("[MODULE] BISMARK2SUMMARY ARGS: " + bismark2summary_args)
 		}
 
 		"""
 		module load bismark
+		
 		bismark2summary
 		"""
 }

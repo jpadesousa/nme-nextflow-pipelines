@@ -1,14 +1,20 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
 params.singlecell = false
 params.rrbs       = false
 params.verbose    = false
 params.pbat       = false
 params.nome       = false
 
-genome = params.genome["bismark"]
 
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process COVERAGE2CYTOSINE {
 
 	label 'coverage2Cytosine'
@@ -28,35 +34,37 @@ process COVERAGE2CYTOSINE {
 		publishDir "$outputdir/aligned/methylation_coverage", mode: "link", overwrite: true, pattern: "*.cov*"
 
 	script:
-		// removing the file extension from the input file name
-		// (https://www.nextflow.io/docs/latest/script.html#removing-part-of-a-string)
-		outfile_basename = coverage_file.toString()  // Important to convert nextflow.processor.TaskPath object to String first
-		outfile_basename = (outfile_basename - ~/.bismark.cov.gz$/)
-		outfile_basename = (outfile_basename - ~/.cov.gz$/)
-		outfile_basename = (outfile_basename - ~/.cov$/)
+		// Genome
+		genome = params.genome["bismark"]
 
+		// Verbose
 		if (verbose){
 			println ("[MODULE] BISMARK COVERAGE2CYTOSINE ARGS: " + coverage2cytosine_args)
 			println ("Bismark Genome is: " + genome)
 		}
 
-		// Options we add are
-		cov2cyt_options = coverage2cytosine_args + " --gzip "
+		// Basename
+			// Removing the file extension from the input file name
+			// (https://www.nextflow.io/docs/latest/script.html#removing-part-of-a-string)
+		outfile_basename = coverage_file.toString()  // Important to convert nextflow.processor.TaskPath object to String first
+		outfile_basename = (outfile_basename - ~/.bismark.cov.gz$/)
+		outfile_basename = (outfile_basename - ~/.cov.gz$/)
+		outfile_basename = (outfile_basename - ~/.cov$/)
 
+		// Default options
+		coverage2cytosine_args = coverage2cytosine_args + " --gzip "
+
+		// NOMe-Seq
 		if (params.nome){
 			if (verbose){
 				println ("NOMe-seq outfile basename: $outfile_basename")
 			}
-			cov2cyt_options += " --nome"
-		}
-
-
-		if (verbose){
-			println ("Now running command: coverage2cytosine --genome $genome $cov2cyt_options --output ${outfile_basename} $coverage_file ")
+			coverage2cytosine_args = coverage2cytosine_args + " --nome"
 		}
 
 		"""
 		module load bismark
-		coverage2cytosine --genome $genome $cov2cyt_options --output ${outfile_basename} $coverage_file
+
+		coverage2cytosine --genome $genome $coverage2cytosine_args --output ${outfile_basename} $coverage_file
 		"""
 }

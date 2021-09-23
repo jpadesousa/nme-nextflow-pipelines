@@ -1,0 +1,10 @@
+#!/usr/bin/env nextflow
+nextflow.enable.dsl=2
+
+// Output directory
+params.outdir = false
+if(params.outdir){
+    outdir = params.outdir + '/results'
+} else {
+    outdir = './results'
+}

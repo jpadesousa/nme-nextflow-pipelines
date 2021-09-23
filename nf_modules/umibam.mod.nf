@@ -1,7 +1,15 @@
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
 params.dual = false
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process UMIBAM {	
     
 	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
@@ -20,22 +28,23 @@ process UMIBAM {
 		publishDir "$outputdir/aligned/bam",  mode: "link", overwrite: true, pattern: "*bam"
 
     script:
+		// Verbose
 		if (verbose){
 			println ("[MODULE] UMIBAM ARGS: " + umibam_args)
 		}
 		
-		// Specialised Epigenetic Clock Processing		
+		// Epigenetic Clock Processing		
 		if (params.dual){
 			umibam_args += " --double_umi "	
 		}
-		else{
+		else {
 			umibam_args += " --umi "	
 		}
 		
 		"""
-		module load UmiBam
+		module load umibam
 		
-		UmiBam $umibam_args  $bam
+		umibam $umibam_args $bam
 		
 		rename UMI_d d *
 		"""

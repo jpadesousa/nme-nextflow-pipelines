@@ -1,8 +1,13 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process BEDTOOLS_GENOMECOV{	
     
+
 	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
 
 	input:
@@ -13,23 +18,25 @@ process BEDTOOLS_GENOMECOV{
 
 	output:
 		path "*bedgraph", emit: bedgraph
-		
+
 		publishDir "$outputdir/aligned/bedgraph", mode: "link", overwrite: true
 
     script:
-		bedtools_genomecov_options = bedtools_genomecov_args
-		
+		// Verbose
 		if (verbose){
 			println ("[MODULE] BEDTOOLS GENOMECOV ARGS: " + bedtools_genomecov_args)
 		}
 
+		// bedtools genomecov parameters for the CUT&Tag pipeline
         if (params.cutntag) {
-			bedtools_genomecov_options += " -bga " // bedtools genomecov parameters for the CUT&Tag pipeline
+			bedtools_genomecov_args += " -bga " 
 		}
 
 		"""
 		module load bedtools2
-		bedtools genomecov ${bedtools_genomecov_options} -ibam ${bam} > ${bam}.bedgraph 
+
+		bedtools genomecov ${bedtools_genomecov_args} -ibam ${bam} > ${bam}.bedgraph
+
 		rename .bam.bedgraph .bedgraph *
     	"""
 }

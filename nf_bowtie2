@@ -1,7 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// Output directory
+
+/* ========================================================================================
+    OUTPUT DIRECTORY
+======================================================================================== */
 params.outdir = false
 if(params.outdir){
     outdir = params.outdir + '/results'
@@ -9,14 +12,22 @@ if(params.outdir){
     outdir = './results'
 }
 
-params.genome       = ""
+
+/* ========================================================================================
+    PARAMETERS
+======================================================================================== */
 params.bowtie2_args = ''
+
+params.genome       = ''
 params.verbose      = false
 params.single_end   = false  // default mode is auto-detect. NOTE: params are handed over automatically 
+params.list_genomes = false
+params.help         = false
 
-params.list_genomes = false;
 
-params.help = false
+/* ========================================================================================
+    MESSAGES
+======================================================================================== */
 // Show help message and exit
 if (params.help){
     helpMessage()
@@ -28,21 +39,32 @@ if (params.list_genomes){
 }
 
 if (params.verbose){
-    println ("[WORKFLOW] BOWTIE2 ARGS: "      + params.bowtie2_args)
+    println ("[WORKFLOW] BOWTIE2 ARGS: " + params.bowtie2_args)
 }
 
-include { makeFilesChannel; getFileBaseNames }     from './nf_modules/files.mod.nf'
+
+/* ========================================================================================
+    GENOMES
+======================================================================================== */
 include { getGenome; listGenomes }                 from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
 }
-
 genome = getGenome(params.genome)
 
-include { BOWTIE2 } from './nf_modules/bowtie2.mod.nf'   params(genome: genome)
 
+/* ========================================================================================
+    FILES CHANNEL
+======================================================================================== */
+include { makeFilesChannel; getFileBaseNames }     from './nf_modules/files.mod.nf'
 file_ch = makeFilesChannel(args)
+
+
+/* ========================================================================================
+    WORKFLOW
+======================================================================================== */
+include { BOWTIE2 } from './nf_modules/bowtie2.mod.nf'   params(genome: genome)
 
 workflow {
 
@@ -70,13 +92,17 @@ workflow.onComplete {
     sendMail(to: "${workflow.userName}@ethz.ch", subject: 'Minimal pipeline execution report', body: msg)
 }
 
+
+/* ========================================================================================
+    HELP MESSAGE
+======================================================================================== */
 def helpMessage() {
  
     log.info"""
     >>
     
     This workflow takes in a list of filenames (in FastQ format), and aligns these files to a genome using Bowtie 2 on the
-    stone compute cluster at Babraham.
+    Euler cluster at ETH Zurich.
 
     If you run Bowtie 2 in this stand-alone workflow it is assumed that you know what you are doing, e.g. raw FastQ files should
     have been trimmed appropriately. If called as is, Bowtie 2 is run in default end-to-end mode (we are adding the options
@@ -124,6 +150,7 @@ def helpMessage() {
       --verbose                       More verbose status messages. [Default: OFF]
       --help                          Displays this help message and exits.
 
+
     Workflow Options:
     =================
 
@@ -135,15 +162,13 @@ def helpMessage() {
 
       -bg                             Sends the entire workflow into the background, thus disconnecting it from the terminal session.
                                       This option launches a daemon process (which will keep running on the headnode) that watches over
-                                      your workflow, and submits new jobs to the SLURM queue as required. Use this option for big pipeline
+                                      your workflow, and submits new jobs to the LSF queue as required. Use this option for big pipeline
                                       jobs, or whenever you do not want to watch the status progress yourself. Upon completion, the
                                       pipeline will send you an email with the job details. This option is HIGHLY RECOMMENDED!
 
       -process.executor=local         Temporarily changes where the workflow is executed to the 'local' machine. See also Nextflow config
-                                      file for more details. [Default: slurm] 
+                                      file for more details. [Default: lsf] 
     
-
     <<
     """.stripIndent()
-
 }

@@ -1,9 +1,17 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
 params.bisulfite  = ''
 params.single_end = false
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process FASTQ_SCREEN {
 
 	label 'fastqScreen'
@@ -20,17 +28,19 @@ process FASTQ_SCREEN {
 	  	path "*html", emit: html
 	  	path "*txt",  emit: report
 		  
-		publishDir "$outputdir/unaligned/qc", mode: "link", overwrite: true
+		publishDir "$outputdir/qc/fastq_screen", mode: "link", overwrite: true
 
 	script:
+		// Verbose
 		if (verbose){
-			println ("[MODULE] FASTQ SCREEN ARGS: "+ fastq_screen_args)
+			println ("[MODULE] FASTQ SCREEN ARGS: " + fastq_screen_args)
 		}
 
+		// Single-end
 		if (params.single_end){
 			// TODO: Add single-end parameter
 		}
-		else{
+		else {
 			// for paired-end files we only use Read 1 (as Read 2 tends to show the exact same thing)
 			if (reads instanceof List) {
 				reads = reads[0]
@@ -39,6 +49,7 @@ process FASTQ_SCREEN {
 
 		"""
 		module load fastq-screen
+
 		fastq_screen --conf /cluster/work/nme/software/config/fastq_screen.conf $params.bisulfite $fastq_screen_args $reads
 		"""
 }

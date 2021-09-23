@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process HISAT2 {
 
 	label 'hisat2'
@@ -21,34 +25,39 @@ process HISAT2 {
 		publishDir "$outputdir/aligned/logs", mode: "link", overwrite: true, pattern: "*stats.txt"
 
 	script:
-		readString = ""
-		hisat_options = hisat2_args
-
+		// Verbose
 		if (verbose){
 			println ("[MODULE] HISAT2 ARGS: " + hisat2_args)
 		}
 
-		// Options we add are
-		hisat_options = hisat_options + " --no-unal --no-softclip "
+		// Default options
+		hisat2_args = hisat2_args + " --no-unal --no-softclip "
 
+		// File names
+		readString = ""
 		if (reads instanceof List) {
-			readString = "-1 "+reads[0]+" -2 "+reads[1]
-			hisat_options = hisat_options + " --no-mixed --no-discordant"
-			single_end = false
+			readString  = "-1 " + reads[0] + " -2 " + reads[1]
+			hisat2_args = hisat2_args + " --no-mixed --no-discordant"
+			single_end  = false
 		}
 		else {
-			readString = "-U "+reads
-			single_end = true
+			readString  = "-U " + reads
+			single_end  = true
 		}
+
+		// Index
 		index = params.genome["hisat2"]
 
-		// TODO: need to add a check if the splice-site infile is present or not, and leave out this parameter otherwise
+		// Splices
+			// TODO: need to add a check if the splice-site infile is present or not, and leave out this parameter otherwise
 		splices = " --known-splicesite-infile " + params.genome["hisat2_splices"]
+
+		// Basename
 		hisat_name = name + "_" + params.genome["name"]
 
 		"""
-		module load hisat2
-		module load samtools
-		hisat2 -p ${task.cpus} ${hisat_options} -x ${index} ${splices} ${readString}  2>${hisat_name}_hisat2_stats.txt | samtools view -bS -F 4 -F 8 -F 256 -> ${hisat_name}_hisat2.bam
+		module load hisat2 samtools
+
+		hisat2 -p ${task.cpus} ${hisat2_args} -x ${index} ${splices} ${readString}  2>${hisat_name}_hisat2_stats.txt | samtools view -bS -F 4 -F 8 -F 256 -> ${hisat_name}_hisat2.bam
 		"""
 }

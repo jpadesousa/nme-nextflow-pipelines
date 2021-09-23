@@ -1,9 +1,15 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// setting if the bam file should be published
+/* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
 params.bam_output = true
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process SAMTOOLS_SORT{	
     
 	label 'samtools'
@@ -21,17 +27,18 @@ process SAMTOOLS_SORT{
 		publishDir "$outputdir/aligned/bam", mode: "link", overwrite: true, enabled: params.bam_output
 
     script:
-		samtools_sort_options = samtools_sort_args
-		
+		// Verbose
 		if (verbose){
 			println ("[MODULE] SAMTOOLS SORT ARGS: " + samtools_sort_args)
 		}
 
-		output_name = bam.toString() - ".bam"
+		// Basename
+		basename = bam.toString() - ".bam"
 
 		"""
 		module load samtools
-		samtools sort $samtools_sort_options $bam -o ${output_name}.sorted.bam
+
+		samtools sort $samtools_sort_args $bam -o ${basename}.sorted.bam
     	"""
 }
 
@@ -52,14 +59,14 @@ process SAMTOOLS_INDEX{
 		publishDir "$outputdir/aligned", mode: "link", overwrite: true
 
     script:
-		samtools_index_options = samtools_index_args
-		
+		// Verbose
 		if (verbose){
 			println ("[MODULE] SAMTOOLS INDEX ARGS: " + samtools_index_args)
 		}
 		
 		"""
 		module load samtools
-		samtools index $samtools_index_options $bam
+
+		samtools index $samtools_index_args $bam
 		"""
 }

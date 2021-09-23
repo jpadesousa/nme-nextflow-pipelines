@@ -1,12 +1,19 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// parameters passed in by specialised pipelines
-params.singlecell    = ''
+
+/* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
 params.pbat 	     = false
 params.unmapped   	 = false
-params.read_identity = ''
+params.singlecell    = ""
+params.read_identity = ""
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process BISMARK {
 	
 	label 'bismark'
@@ -31,75 +38,68 @@ process BISMARK {
 		publishDir "$outputdir/unaligned/fastq", mode: "link", overwrite: true, pattern: "*.fq.gz"
 
     script:
-		cores = 1
-		readString = ""
-
+		// Verbose
 		if (verbose){
 			println ("[MODULE] BISMARK ARGS: " + bismark_args)
 		}
 
-		// Options we add are
-		bismark_options = bismark_args
+		// Single-cell
 		if (params.singlecell){
-			bismark_options += " --non_directional "
+			bismark_args += " --non_directional "
 		}
-		else{
+		else {
 		
-		}
-		
-		unmapped_1_name = ''
-		unmapped_2_name = ''
-		
-		if (params.unmapped){
-			bismark_options += " --unmapped "
-			unmapped_1_name = name + "_unmapped_R1"
-			unmapped_2_name = name + "_unmapped_R2"
 		}
 
+		// PBAT
 		if (params.pbat){
-			bismark_options += " --pbat "
+			bismark_args += " --pbat "
 		}
 
+		// File names
+		readString = ""
 		if (reads instanceof List) {
-			readString = "-1 "+reads[0]+" -2 "+reads[1]
+			readString = "-1 " + reads[0] + " -2 " + reads[1]
 		}
 		else {
 			readString = reads
 		}
 
+		// Index
 		index = "--genome " + params.genome["bismark"]
 
+		// Basename
+			/// adds Genome build and aligner to output name	
 		unmapped_name = ''	
-			// add Genome build and aligner to output name
 		if (params.read_identity == "1" || params.read_identity == "2"){
-			// println ("FILENAME IS: $reads")
+
 			if (params.read_identity == "1"){
 				unmapped_name = name + "_unmapped_R1"
 			}
-			else{
+			else {
 				unmapped_name = name + "_unmapped_R2"
 			}
 
 			if (bismark_args =~ /-hisat/){ // if HISAT2 was given on the command line
 				bismark_name = unmapped_name + "_" + params.genome["name"] + "_bismark_hisat2"
 			}
-			else{ // default is Bowtie 2
+			else { // default is Bowtie 2
 				bismark_name = unmapped_name + "_" + params.genome["name"] + "_bismark_bt2"
 			}
 		}
-		else{
+		else {
+
 			if (bismark_args =~ /-hisat/){ // if HISAT2 was given on the command line
 				bismark_name = name + "_" + params.genome["name"] + "_bismark_hisat2"
 			}
-			else{ // default is Bowtie 2
+			else { // default is Bowtie 2
 				bismark_name = name + "_" + params.genome["name"] + "_bismark_bt2"
 			}
 		}	
-		// println ("Output basename: $bismark_name")
 		
 		"""
 		module load bismark
-		bismark --parallel $cores --basename $bismark_name $index $bismark_options $readString
-		"""
 
+		bismark --parallel 1 --basename $bismark_name $index $bismark_args $readString
+		"""
 }

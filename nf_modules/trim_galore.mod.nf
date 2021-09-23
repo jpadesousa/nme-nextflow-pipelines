@@ -1,15 +1,22 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.singlecell  = ''
-params.rrbs        = ''
-params.pbat        = ''
-params.clock       = false
+
+/* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.singlecell          = ''
+params.rrbs                = ''
+params.pbat                = ''
+params.clock               = false
 // For Epigenetic Clock Processing
 params.three_prime_clip_R1 = ''
 params.three_prime_clip_R2 = ''
 
 
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process TRIM_GALORE {
 
 	label 'trimGalore'
@@ -29,20 +36,22 @@ process TRIM_GALORE {
 		publishDir "$outputdir/unaligned/logs",  mode: "link", overwrite: true, pattern: "*trimming_report.txt"
 
 	script:
+		// Verbose
 		if (verbose){
 			println ("[MODULE] TRIM GALORE ARGS: " + trim_galore_args)
 		}
 
+		// Paired-end
 		pairedString = ""
 		if (reads instanceof List) {
 			pairedString = "--paired"
 		}
 
-		// Specialised Epigenetic Clock Processing
+		// Epigenetic Clock Processing
 		if (params.clock){
 			trim_galore_args += " --breitling "
 		}
-		else{
+		else {
 			if (params.singlecell){
 				trim_galore_args += " --clip_r1 6 "
 				if (pairedString == "--paired"){
@@ -68,7 +77,8 @@ process TRIM_GALORE {
 		}
 
 		"""
-		module load trimgalore fastqc python_cpu
+		module load trimgalore
+
 		trim_galore -j 4 $trim_galore_args ${pairedString} ${reads}
 		"""
 }

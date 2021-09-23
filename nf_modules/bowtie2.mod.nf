@@ -1,12 +1,17 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// parameters passed in by specialised pipelines
-params.cutntag = false
 
-// setting if the bam file should be published
-params.bam_output = true
+/* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.cutntag    = false
+params.bam_output = true // setting if the bam file should be published
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process BOWTIE2 {
 
 		label 'bowtie2'
@@ -26,34 +31,38 @@ process BOWTIE2 {
 		publishDir "$outputdir/aligned/logs", mode: "link", overwrite: true, pattern: "*stats.txt"
 
 	script:
-		readString = ""
-		
+		// Verbose
 		if (verbose){
 			println ("[MODULE] BOWTIE2 ARGS: " + bowtie2_args)
 		}
 
-		// Options we add are
-		bowtie_options = bowtie2_args
-		bowtie_options +=  " --no-unal " // We don't need unaligned reads in the BAM file
+		// Default options
+		bowtie2_args +=  " --no-unal " // We don't need unaligned reads in the BAM file
 
+		// File names
+		readString = ""
 		if (reads instanceof List) {
 			readString = "-1 " + reads[0] + " -2 " + reads[1]
-			bowtie_options += " --no-discordant --no-mixed " // just output properly paired reads
+			bowtie2_args += " --no-discordant --no-mixed " // just output properly paired reads
 		}
 		else {
 			readString = "-U " + reads
 		}
 
+		// CUT&Tag
 		if (params.cutntag) {
-			bowtie_options += " --local --very-sensitive --phred33 -I 10 -X 700 " // Bowtie parameters for the CUT&Tag pipeline
+			bowtie2_args += " --local --very-sensitive --phred33 -I 10 -X 700 "
 		}
 
+		// Index
 		index = params.genome["bowtie2"]
+
+		// Basename
 		bowtie_name = name + "_" + params.genome["name"]
 
 		"""
 		module load bowtie2 samtools
-		bowtie2 -x ${index} -p ${task.cpus} ${bowtie_options} ${readString}  2>${bowtie_name}_bowtie2_stats.txt | samtools view -bS -F 4 -F 8 -F 256 -> ${bowtie_name}_bowtie2.bam
-		"""
 
+		bowtie2 -x ${index} -p ${task.cpus} ${bowtie2_args} ${readString}  2>${bowtie_name}_bowtie2_stats.txt | samtools view -bS -F 4 -F 8 -F 256 -> ${bowtie_name}_bowtie2.bam
+		"""
 }

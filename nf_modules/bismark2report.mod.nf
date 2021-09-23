@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
+/* ========================================================================================
+    PROCESSES
+======================================================================================== */
 process BISMARK2REPORT {
 
 	input:
@@ -15,13 +19,14 @@ process BISMARK2REPORT {
 		publishDir "$outputdir/aligned/logs", mode: "link", overwrite: true
 
 	script:
+		// Verbose
 		if (verbose){
 			println ("[MODULE] BISMARK2REPORT ARGS: " + bismark2report_args)
 		}
 
 		"""
 		module load bismark
+
 		bismark2report
 		"""
-
 }
