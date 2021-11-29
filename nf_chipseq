@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -56,7 +56,7 @@ if (params.verbose){
 /* ========================================================================================
     GENOMES
 ======================================================================================== */
-include { getGenome; listGenomes }               from './nf_modules/genomes.mod.nf'
+include { getGenome; listGenomes } from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
@@ -67,7 +67,7 @@ genome = getGenome(params.genome)
 /* ========================================================================================
     FILES CHANNEL
 ======================================================================================== */
-include { makeFilesChannel; getFileBaseNames }   from './nf_modules/files.mod.nf'
+include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 file_ch = makeFilesChannel(args)
 
 
@@ -101,13 +101,9 @@ workflow {
             BOWTIE2.out.stats.ifEmpty([]),
         ).collect()
 
-        // multiqc_ch.subscribe {  println "Got: $it"  }
-
         MULTIQC (multiqc_ch, outdir, params.multiqc_args, params.verbose)
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -152,8 +148,6 @@ def helpMessage() {
     --- MultiQC*
         
     * This step runs only once ALL other jobs have completed.
-     
-    By default all these steps are submitted as jobs to the Euler cluster at ETH Zurich.
 
     By default, the involved tools are run in the following way:
     ------------------------------------------------------------

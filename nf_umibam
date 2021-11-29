@@ -7,19 +7,18 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 /* ========================================================================================
     PARAMETERS
 ======================================================================================== */
-params.verbose    = false
-params.single_end = false
-params.dual       = false // params are handed over automatically
-params.help       = false
-
+params.verbose     = false
+params.single_end  = false
+params.dual        = false // params are handed over automatically
+params.help        = false
 params.umibam_args = ''
 
 
@@ -40,14 +39,14 @@ if (params.verbose){
 /* ========================================================================================
     FILES CHANNEL
 ======================================================================================== */
-file_ch = Channel .fromPath(args)    // UmiBam expects just the path to be passed in
+file_ch = Channel .fromPath(args) // UmiBam expects just the path to be passed in
     .map{f-> [ f.baseName, f] } // transforming a channel with Paths from *.bam to a tuple with [basename,[basename.bam]]
 
 
 /* ========================================================================================
     WORKFLOW
 ======================================================================================== */
-include { UMIBAM }                                  from './nf_modules/umibam.mod.nf'
+include { UMIBAM } from './nf_modules/umibam.mod.nf'
     
 workflow {
 
@@ -56,8 +55,6 @@ workflow {
 
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -87,8 +84,8 @@ def helpMessage() {
     
     SYNOPSIS:
 
-    This single-tool workflow takes in a list of filenames in BAM format, and de-duplicates these files based on mapping position
-    as well as the UMI sequence (on the Euler cluster at ETH Zurich).
+    This single-tool workflow takes in a list of filenames in BAM format and de-duplicates them based on mapping position
+    as well as the UMI sequence.
 
     If you run UmiBam in this stand-alone workflow it is assumed that you know what you are doing, i.e. BAM files need to contain
     a UMI sequence as the last entry of each read ID, separated by a colon, e.g. @HWUSI:...:CAGTTAGC. If called as is, UmiBam

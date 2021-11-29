@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -19,7 +19,6 @@ if(params.outdir){
 params.verbose          = false
 params.single_end       = false  // default mode is auto-detect. NOTE: params are handed over automatically 
 params.help             = false
-
 params.trim_galore_args = ''
 
 
@@ -47,7 +46,7 @@ file_ch = makeFilesChannel(args)
 /* ========================================================================================
     WORKFLOW
 ======================================================================================== */
-include { TRIM_GALORE }                        from './nf_modules/trim_galore.mod.nf'
+include { TRIM_GALORE } from './nf_modules/trim_galore.mod.nf'
 
 workflow {
 
@@ -56,8 +55,6 @@ workflow {
 
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -86,8 +83,8 @@ def helpMessage() {
 
     SYNOPSIS:
     
-    This workflow takes in a list of filenames (in FastQ format), and runs the files through Trim Galore for adapter- and
-    quality trimming (on the Euler cluster at ETH Zurich).
+    This workflow takes in a list of filenames (in FastQ format) and runs them through Trim Galore for adapter- and
+    quality trimming.
 
     If called as is, this Trim Galore workflow auto-detects the library type (single-end (SE)/ paired-end (PE)), the sequencing 
     adapter used and selects Phred 20 as the default quality cutoff. To modify this default trimming behaviour, please specify

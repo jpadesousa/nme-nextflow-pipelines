@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -17,7 +17,6 @@ if(params.outdir){
     PARAMETERS
 ======================================================================================== */
 params.bowtie2_args = ''
-
 params.genome       = ''
 params.verbose      = false
 params.single_end   = false  // default mode is auto-detect. NOTE: params are handed over automatically 
@@ -46,7 +45,7 @@ if (params.verbose){
 /* ========================================================================================
     GENOMES
 ======================================================================================== */
-include { getGenome; listGenomes }                 from './nf_modules/genomes.mod.nf'
+include { getGenome; listGenomes } from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
@@ -57,7 +56,7 @@ genome = getGenome(params.genome)
 /* ========================================================================================
     FILES CHANNEL
 ======================================================================================== */
-include { makeFilesChannel; getFileBaseNames }     from './nf_modules/files.mod.nf'
+include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 file_ch = makeFilesChannel(args)
 
 
@@ -73,8 +72,6 @@ workflow {
     
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -101,14 +98,17 @@ def helpMessage() {
     log.info"""
     >>
     
-    This workflow takes in a list of filenames (in FastQ format), and aligns these files to a genome using Bowtie 2 on the
-    Euler cluster at ETH Zurich.
+    This workflow takes in a list of filenames (in FastQ format) and aligns them to a genome using Bowtie 2.
 
     If you run Bowtie 2 in this stand-alone workflow it is assumed that you know what you are doing, e.g. raw FastQ files should
     have been trimmed appropriately. If called as is, Bowtie 2 is run in default end-to-end mode (we are adding the options
     '--no-unal', and additionally for paired-end files '--no-mixed --no-discordant' to only allow concordant read pair
     alignmnents). To add additional parameters, please consider tool-specific arguments that are compatible with Bowtie 2
     (see '--bowtie2_args' below).
+
+
+    ==============================================================================================================
+
 
     USAGE:
     

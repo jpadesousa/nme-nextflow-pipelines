@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -60,7 +60,7 @@ if (params.verbose){
 /* ========================================================================================
     GENOMES
 ======================================================================================== */
-include { getGenome; listGenomes }             from './nf_modules/genomes.mod.nf'
+include { getGenome; listGenomes } from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
@@ -78,6 +78,7 @@ file_ch = makeFilesChannel(args)
 /* ========================================================================================
     WORKFLOW
 ======================================================================================== */
+
 // ---------------------------------------- //
 // Condition to output the original sorted.bam file only if that file will be subsequently deduplicated
 
@@ -153,7 +154,8 @@ def helpMessage() {
     SYNOPSIS:
 
     In a nutshell, this workflow runs an entire processing pipeline on FastQ files, including QC, contamination QC,
-    quality-/adapter trimming, alignments to a genome using Bowtie 2, sorting, marking duplicates, generating a genome coverage bedgraph, and finally generating an aggregate QC report. The workflow is suitable for CUT&Tag. Here is a graphical representation of the workflow:
+    quality-/adapter trimming, alignments to a genome using Bowtie 2, sorting, marking duplicates, generating a genome coverage bedgraph,
+     and finally generating an aggregate QC report. The workflow is suitable for CUT&Tag. Here is a graphical representation of the workflow:
 
     --- FastQC
     --- FastQ Screen
@@ -169,8 +171,6 @@ def helpMessage() {
     --- MultiQC*
 
     * This step runs only once ALL other jobs have completed.
-
-    By default all these steps are submitted as jobs to the Euler cluster at ETH Zurich.
 
     By default, the involved tools are run in the following way:
     ------------------------------------------------------------

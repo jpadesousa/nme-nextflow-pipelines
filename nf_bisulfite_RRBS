@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -56,7 +56,7 @@ if (params.verbose){
 /* ========================================================================================
     GENOMES
 ======================================================================================== */
-include { getGenome; listGenomes }             from './nf_modules/genomes.mod.nf'
+include { getGenome; listGenomes } from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
@@ -98,6 +98,7 @@ workflow {
         FASTQ_SCREEN                   (TRIM_GALORE.out.reads, outdir, params.fastq_screen_args, params.verbose)
         FASTQC2                        (TRIM_GALORE.out.reads, outdir, params.fastqc_args, params.verbose)
         BISMARK                        (TRIM_GALORE.out.reads, outdir, params.bismark_args, params.verbose)
+
         // Skipping deduplication step
         BISMARK_METHYLATION_EXTRACTOR  (BISMARK.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
 
@@ -118,14 +119,11 @@ workflow {
             BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([]),
         ).collect()
 
-        // bismark_report_ch.subscribe {  println "Got: $it"  }
         BISMARK2REPORT                   (bismark_report_ch, outdir, params.bismark2report_args, params.verbose)
         BISMARK2SUMMARY                  (bismark_report_ch, outdir, params.bismark2summary_args, params.verbose)
         MULTIQC                          (multiqc_ch, outdir, params.multiqc_args, params.verbose)
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -172,8 +170,6 @@ def helpMessage() {
     --- MultiQC*
         
     * These steps run only once ALL other jobs have completed.
-     
-    By default all these steps are submitted as jobs to the Euler cluster at ETH Zurich.
 
     By default, the involved tools are run in the following way:
     ------------------------------------------------------------
@@ -184,6 +180,9 @@ def helpMessage() {
     Bismark methylation extraction:   '--bedGraph --buffer 10G --parallel 4'                  
     
     To add additional parameters to any of the programs, consider supplying tool-specific arguments (see --toolname_args="..." below).
+
+
+    ==============================================================================================================
 
 
     USAGE:

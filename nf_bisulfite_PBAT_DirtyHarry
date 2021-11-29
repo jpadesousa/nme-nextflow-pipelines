@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -17,7 +17,7 @@ if(params.outdir){
     PARAMETERS
 ======================================================================================== */
 params.genome = ''
-params.pbat   = '9' // default is 9, but this can be changed
+params.pbat   = '9'
 
 params.fastqc_args                        = ''
 params.fastq_screen_args                  = ''
@@ -62,7 +62,7 @@ if (params.verbose){
 /* ========================================================================================
     GENOMES
 ======================================================================================== */
-include { getGenome; listGenomes }              from './nf_modules/genomes.mod.nf'
+include { getGenome; listGenomes } from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
@@ -73,7 +73,7 @@ genome = getGenome(params.genome)
 /* ========================================================================================
     FILES CHANNEL
 ======================================================================================== */
-include { makeFilesChannel; getFileBaseNames }  from './nf_modules/files.mod.nf'
+include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 file_ch = makeFilesChannel(args)
 
 
@@ -87,6 +87,7 @@ include { FASTQ_SCREEN }                                      from './nf_modules
 
 // Adding pbat flag for PBAT processing. For Trim Galore we pass on the number of bp that need to be clipped at the 5' end
 include { TRIM_GALORE }                                       from './nf_modules/trim_galore.mod.nf' params(pbat: params.pbat)
+
 // Adding pbat flag for PBAT processing
 include { BISMARK }                                           from './nf_modules/bismark.mod.nf' params(genome: genome, pbat: true, unmapped: true)
 include { BISMARK as BISMARK_UN1 }                            from './nf_modules/bismark.mod.nf' params(genome: genome, pbat: true, read_identity: "1")
@@ -167,7 +168,6 @@ workflow {
             BISMARK_METHYLATION_EXTRACTOR.out.report.ifEmpty([]),
             BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([]),
         ).collect()
-        // bismark_report_ch.subscribe {  println "Got: $it"  }
 
         BISMARK2SUMMARY                  (bismark_summary_report_ch, outdir, params.bismark2summary_args, params.verbose)
         
@@ -193,8 +193,6 @@ workflow {
         MULTIQC                          (multiqc_ch, outdir, params.multiqc_args, params.verbose)
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -269,8 +267,6 @@ def helpMessage() {
     --- MultiQC*
         
     * These steps run only once ALL other jobs have completed.
-     
-    By default all these steps are submitted as jobs to the Euler cluster at ETH Zurich.
 
     By default, the involved tools are run in the following way:
     ------------------------------------------------------------

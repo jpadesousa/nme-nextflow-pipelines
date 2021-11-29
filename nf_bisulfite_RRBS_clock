@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -59,7 +59,7 @@ if (params.verbose){
 /* ========================================================================================
     GENOMES
 ======================================================================================== */
-include { getGenome; listGenomes }                 from './nf_modules/genomes.mod.nf'
+include { getGenome; listGenomes } from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
@@ -70,7 +70,7 @@ genome = getGenome(params.genome)
 /* ========================================================================================
     FILES CHANNEL
 ======================================================================================== */
-include { makeFilesChannel; getFileBaseNames }     from './nf_modules/files.mod.nf'
+include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 file_ch = makeFilesChannel(args)
 
 
@@ -81,7 +81,6 @@ include { FASTQC }                                 from './nf_modules/fastqc.mod
 include { FASTQC as FASTQC2 }                      from './nf_modules/fastqc.mod.nf'
 include { FASTQC as FASTQC3 }                      from './nf_modules/fastqc.mod.nf'
 
-// --bisulfite paramater needs to be re-enabled, but MultiQC is currently broken
 include { FASTQ_SCREEN }                           from './nf_modules/fastq_screen.mod.nf' params(bisulfite: '--bisulfite')
 
 // Adding flag for RRBS processing
@@ -134,15 +133,11 @@ workflow {
             BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([]),
         ).collect()
 
-        // bismark_report_ch.subscribe {  println "Got: $it"  }
-
         BISMARK2REPORT                   (bismark_report_ch, outdir, params.bismark2report_args, params.verbose)
         BISMARK2SUMMARY                  (bismark_report_ch, outdir, params.bismark2summary_args, params.verbose)
         MULTIQC                          (multiqc_ch, outdir, params.multiqc_args, params.verbose)
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -195,8 +190,6 @@ def helpMessage() {
     --- MultiQC*
         
     * These steps run only once ALL other jobs have completed.
-     
-    By default all these steps are submitted as jobs to the Euler cluster at ETH Zurich.
 
     The involved tools are run in the following way:
     ------------------------------------------------------------

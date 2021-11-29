@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -46,7 +46,7 @@ file_ch = makeFilesChannel(args)
 /* ========================================================================================
     WORKFLOW
 ======================================================================================== */
-include { FASTQC }                             from './nf_modules/fastqc.mod.nf'
+include { FASTQC } from './nf_modules/fastqc.mod.nf'
 
 workflow {
 
@@ -55,8 +55,6 @@ workflow {
        
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -85,7 +83,7 @@ def helpMessage() {
     
     SYNOPSIS:
     
-    This workflow takes in a list of filenames (in FastQ format) and runs FastQC on the files (by default on the Euler cluster at ETH Zurich).
+    This workflow takes in a list of filenames (in FastQ format) and runs FastQC on the files.
 
     Running this stand-alone workflow executes FastQC with default parameters (i.e. 'fastqc file.fastq.gz'). To add additional parameters,
     please consider specifying tool-specific arguments that are compatible with FastQC (see '--fastqc_args' below).

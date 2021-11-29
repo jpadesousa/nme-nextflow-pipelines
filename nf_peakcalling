@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -51,7 +51,7 @@ if (params.verbose){
 /* ========================================================================================
     GENOMES
 ======================================================================================== */
-include { getGenome; listGenomes }              from './nf_modules/genomes.mod.nf'
+include { getGenome; listGenomes } from './nf_modules/genomes.mod.nf'
 
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
@@ -62,7 +62,7 @@ genome = getGenome(params.genome)
 /* ========================================================================================
     FILES CHANNEL
 ======================================================================================== */
-include { makeFilesChannel; getFileBaseNames }  from './nf_modules/files.mod.nf'
+include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 
 // Loading the design csv file
 if(args[0].endsWith('.csv')){
@@ -156,8 +156,8 @@ def helpMessage() {
     If the input file is a aligned files (e.g., *.bam or *.bedgraph), the peak caller will run without a control sample.
 
 
-
     ==============================================================================================================
+
 
     USAGE:
     

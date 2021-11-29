@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -19,7 +19,6 @@ if(params.outdir){
 params.fastq_screen_args = ''
 params.verbose           = false
 params.single_end        = false  // default mode is auto-detect. NOTE: params are handed over automatically  
-
 
 
 /* ========================================================================================
@@ -47,7 +46,7 @@ file_ch = makeFilesChannel(args)
 /* ========================================================================================
     WORKFLOW
 ======================================================================================== */
-include { FASTQ_SCREEN }                       from './nf_modules/fastq_screen.mod.nf'
+include { FASTQ_SCREEN } from './nf_modules/fastq_screen.mod.nf'
 
 workflow {
 
@@ -56,8 +55,6 @@ workflow {
 
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -86,13 +83,17 @@ def helpMessage() {
     
     SYNOPSIS:
 
-    This workflow takes in a list of filenames in FastQ format, and runs FastQ Screen on these files on the ETH cluster
-    against at wide range of standard genomes we use to assess contamination.
+    This workflow takes in a list of filenames in FastQ format and runs FastQ Screen on them against a wide range of 
+    standard genomes to assess contamination.
     
     If you run FastQ Screen in this stand-alone workflow it is assumed that you know what you are doing, e.g. in --bisulfite mode,
     raw FastQ files should have been trimmed appropriately (non-bisulfite samples are aligned in local mode, making adapter trimming
     less of an issue). To supply additional non-standard parameters, please consider supplying tool-specific arguments that are compatible
     with FastQ Screen (see '--fastq_screen_args' below).
+
+
+    ==============================================================================================================
+
 
     USAGE:
     

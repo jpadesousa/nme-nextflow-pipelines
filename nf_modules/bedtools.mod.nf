@@ -6,7 +6,6 @@ nextflow.enable.dsl=2
     PROCESSES
 ======================================================================================== */
 process BEDTOOLS_GENOMECOV{	
-    
 
 	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
 
@@ -22,7 +21,7 @@ process BEDTOOLS_GENOMECOV{
 		publishDir "$outputdir/aligned/bedgraph", mode: "link", overwrite: true
 
     script:
-		// Verbose
+	    // Verbose
 		if (verbose){
 			println ("[MODULE] BEDTOOLS GENOMECOV ARGS: " + bedtools_genomecov_args)
 		}

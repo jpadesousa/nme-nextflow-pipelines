@@ -8,9 +8,9 @@ nextflow.enable.dsl=2
 params.outdir = false
 
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -71,8 +71,6 @@ workflow {
         BISMARK(file_ch, outdir, params.bismark_args, params.verbose)
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -102,11 +100,10 @@ def helpMessage() {
     
     SYNOPSIS:
 
-    This workflow takes in a list of filenames (in FastQ format), and aligns these files to a genome using Bismark using the
-    Euler cluster at ETH Zurich.
+    This workflow takes in a list of filenames (in FastQ format) and aligns them to a genome using Bismark.
 
     If you run Bismark in this stand-alone workflow it is assumed that you know what you are doing, e.g. raw FastQ files should
-    have been trimmed appropriately. If called as is, Bismark is run in default mode. To add additional parameters, please 
+    have been trimmed appropriately. If called as is, Bismark will run in default mode. To add additional parameters, please 
     consider tool-specific arguments that are compatible with Bismark (see '--bismark_args' below).
 
 

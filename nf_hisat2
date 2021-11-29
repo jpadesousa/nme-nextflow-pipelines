@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -56,22 +56,20 @@ genome = getGenome(params.genome)
 /* ========================================================================================
     FILES CHANNEL
 ======================================================================================== */
-include { makeFilesChannel; getFileBaseNames }    from './nf_modules/files.mod.nf'
+include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 file_ch = makeFilesChannel(args)
 
 
 /* ========================================================================================
     WORKFLOW
 ======================================================================================== */
-include { HISAT2 }                                from './nf_modules/hisat2.mod.nf' params(genome: genome)
+include { HISAT2 } from './nf_modules/hisat2.mod.nf' params(genome: genome)
 
 workflow {
     main:
         HISAT2(file_ch, outdir, params.hisat2_args, params.verbose)
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -100,8 +98,7 @@ def helpMessage() {
 
     SYNOPSIS:
     
-    This workflow takes in a list of filenames (in FastQ format), and aligns these files to a genome using HISAT2 on the
-    Euler cluster at ETH Zurich.
+    This workflow takes in a list of filenames (in FastQ format) and aligns them to a genome using HISAT2.
 
     If you run HISAT2 in this stand-alone workflow it is assumed that you know what you are doing, e.g. raw FastQ files should
     have been trimmed appropriately. If called as is, HISAT2 is run in end-to-end mode (we are adding the options '--no-unal

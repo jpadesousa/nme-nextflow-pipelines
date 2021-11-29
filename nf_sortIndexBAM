@@ -7,9 +7,9 @@ nextflow.enable.dsl=2
 ======================================================================================== */
 params.outdir = false
 if(params.outdir){
-    outdir = params.outdir + '/results'
+    outdir = params.outdir
 } else {
-    outdir = './results'
+    outdir = '.'
 }
 
 
@@ -44,16 +44,15 @@ if (params.verbose){
 /* ========================================================================================
     FILES CHANNEL
 ======================================================================================== */
-include { makeFilesChannel; getFileBaseNames }    from './nf_modules/files.mod.nf'
+include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 file_ch = Channel.fromPath(args) // UmiBam expects just the path to be passed in
 
 
 /* ========================================================================================
     WORKFLOW
 ======================================================================================== */
-include { SAMTOOLS_SORT;SAMTOOLS_INDEX }          from './nf_modules/samtools.mod.nf'
+include { SAMTOOLS_SORT;SAMTOOLS_INDEX } from './nf_modules/samtools.mod.nf'
 
-// file_ch.subscribe{  println "Got: $it"  }
 workflow {
 
     main:
@@ -62,8 +61,6 @@ workflow {
 
 }
 
-// Since workflows with very long command lines tend to fail to get rendered at all, I was experimenting with a
-// minimal execution summary report so we at least know what the working directory was...
 workflow.onComplete {
 
     def msg = """\
@@ -98,8 +95,7 @@ def helpMessage() {
     - sorts these files by genomic coordinates (samtools sort), and finally
     - creates a BAM index of the file (samtools index)
     
-    on the Euler cluster at ETH Zurich. Currently, both the original BAM file as well as a sorted version (ending in "_sorted.bam")
-    will be kept.
+    Currently, both the original BAM file as well as a sorted version (ending in "_sorted.bam") will be kept.
 
 
     ==============================================================================================================
