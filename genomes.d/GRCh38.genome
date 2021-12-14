@@ -8,4 +8,4 @@ star            ${GENOMES}/Homo_sapiens/NCBI/GRCh38/Sequence/STARIndex/genome
 bwa             ${GENOMES}/Homo_sapiens/NCBI/GRCh38/Sequence/BWAIndex/genome
 hisat2	        ${GENOMES}/Homo_sapiens/NCBI/GRCh38/Sequence/Hisat2Index/genome
 hisat2_splices	${GENOMES}/Homo_sapiens/NCBI/GRCh38/Sequence/Hisat2Index/splice_sites.txt
-gtf	            ${GENOMES}/Homo_sapiens/NCBI/GRCh38/Annotation/Genes/genes.gtf
+gtf	        ${GENOMES}/Homo_sapiens/NCBI/GRCh38/Annotation/Genes/genes.gtf
