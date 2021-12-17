@@ -7,4 +7,4 @@ star
 bwa             
 hisat2	        
 hisat2_splices	
-gtf	        ${GENOMES}/Sus_scrofa/Ensembl/Sscrofa11.1/Annotation/Release_90-2017-11-17/Genes/genes.gtf
+gtf	            ${GENOMES}/Sus_scrofa/Ensembl/Sscrofa11.1/Annotation/Release_90-2017-11-17/Genes/genes.gtf
