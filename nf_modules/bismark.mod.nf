@@ -81,7 +81,7 @@ process BISMARK {
 			}
 
 			if (bismark_args =~ /-hisat/){ // if HISAT2 was given on the command line
-				bismark_name = unmapped_name + "_" + params.genome["name"] + "_bismark_hisat2"
+				bismark_name = unmapped_name + "_" + params.genome["name"] + "_bismark_ht2"
 			}
 			else { // default is Bowtie 2
 				bismark_name = unmapped_name + "_" + params.genome["name"] + "_bismark_bt2"
@@ -90,7 +90,7 @@ process BISMARK {
 		else {
 
 			if (bismark_args =~ /-hisat/){ // if HISAT2 was given on the command line
-				bismark_name = name + "_" + params.genome["name"] + "_bismark_hisat2"
+				bismark_name = name + "_" + params.genome["name"] + "_bismark_ht2"
 			}
 			else { // default is Bowtie 2
 				bismark_name = name + "_" + params.genome["name"] + "_bismark_bt2"

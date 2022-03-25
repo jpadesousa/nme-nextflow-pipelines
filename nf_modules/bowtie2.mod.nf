@@ -63,6 +63,6 @@ process BOWTIE2 {
 		"""
 		module load bowtie2 samtools
 
-		bowtie2 -x ${index} -p ${task.cpus} ${bowtie2_args} ${readString}  2>${bowtie_name}_bowtie2_stats.txt | samtools view -bS -F 4 -F 8 -F 256 -> ${bowtie_name}_bowtie2.bam
+		bowtie2 -x ${index} -p ${task.cpus} ${bowtie2_args} ${readString}  2>${bowtie_name}_bt2_stats.txt | samtools view -bS -F 4 -F 8 -F 256 -> ${bowtie_name}_bt2.bam
 		"""
 }

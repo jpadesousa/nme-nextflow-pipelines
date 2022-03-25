@@ -93,7 +93,7 @@ def isPairedEnd(bamfile) {
 	
 	if (bamfile =~ /_pe/){
 		if (params.verbose){
-			println ("File is paired-end!")
+			println ("File is paired-end")
 		}
 		return true
 	}
