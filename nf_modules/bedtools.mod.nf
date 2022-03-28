@@ -17,7 +17,6 @@ process BEDTOOLS_GENOMECOV{
 
 	output:
 		path "*bedgraph", emit: bedgraph
-
 		publishDir "$outputdir/aligned/bedgraph", mode: "link", overwrite: true
 
     script:
@@ -33,9 +32,7 @@ process BEDTOOLS_GENOMECOV{
 
 		"""
 		module load bedtools2
-
 		bedtools genomecov ${bedtools_genomecov_args} -ibam ${bam} > ${bam}.bedgraph
-
 		rename .bam.bedgraph .bedgraph *
     	"""
 }
