@@ -20,7 +20,7 @@ process MARK_DUPLICATES{
 		path "*bam", emit: bam
 		path "*txt", emit: metrics
 
-	 	publishDir "$outputdir/aligned/bam",              mode: "link", overwrite: true, pattern: "*sorted.bam"
+	 	publishDir "$outputdir/aligned/bam",              mode: "link", overwrite: true, pattern: "*dupflag.bam"
 		publishDir "$outputdir/aligned/bam/deduplicated", mode: "link", overwrite: true, pattern: "*dedup.bam", enabled: params.bam_output
 		publishDir "$outputdir/aligned/logs",             mode: "link", overwrite: true, pattern: "*txt"
 
@@ -39,12 +39,11 @@ process MARK_DUPLICATES{
 		} else if (!(mark_duplicates_args =~ /.*REMOVE_DUPLICATES=true.*/) && (mark_duplicates_args =~ /.*REMOVE_SEQUENCING_DUPLICATES=true.*/)) {
 			output_name = base_name + ".sorted.seqdedup.bam"
 		} else {
-			output_name = base_name + ".sorted.bam"
+			output_name = base_name + ".sorted.dupflag.bam"
 		}
 
 		"""
 		module load picard
-
 		picard MarkDuplicates INPUT=${bam} OUTPUT=${output_name} ASSUME_SORTED=true METRICS_FILE=${base_name}.MarkDuplicates.metrics.txt ${mark_duplicates_args}
 		"""
 }
