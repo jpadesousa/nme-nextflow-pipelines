@@ -16,12 +16,13 @@ if(params.outdir){
 /* ========================================================================================
     PARAMETERS
 ======================================================================================== */
-params.fastqc_args        = ''
-params.fastq_screen_args  = ''
-params.trim_galore_args   = ''
-params.bowtie2_args       = ''
-params.multiqc_args       = ''
-params.samtools_sort_args = ''
+params.fastqc_args         = ''
+params.fastq_screen_args   = ''
+params.trim_galore_args    = ''
+params.bowtie2_args        = ''
+params.multiqc_args        = ''
+params.samtools_sort_args  = ''
+params.samtools_index_args = ''
 
 params.genome       = ''
 params.verbose      = false
@@ -49,6 +50,7 @@ if (params.verbose){
     println ("[WORKFLOW] TRIM GALORE ARGS: "      + params.trim_galore_args)
     println ("[WORKFLOW] BOWTIE2 ARGS: "          + params.bowtie2_args)
     println ("[WORKFLOW] SAMTOOLS SORT ARGS: "    + params.samtools_sort_args)
+    println ("[WORKFLOW] SAMTOOLS INDEX ARGS: "   + params.samtools_index_args)
     println ("[WORKFLOW] MULTIQC ARGS: "          + params.multiqc_args)
 }
 
@@ -80,7 +82,8 @@ include { FASTQ_SCREEN }      from './nf_modules/fastq_screen.mod.nf'
 include { TRIM_GALORE }       from './nf_modules/trim_galore.mod.nf'
 
 include { BOWTIE2 }           from './nf_modules/bowtie2.mod.nf'   params(genome: genome, bam_output: false)
-include { SAMTOOLS_SORT }     from './nf_modules/samtools.mod.nf'
+include { SAMTOOLS_SORT }     from './nf_modules/samtools.mod.nf'  params(bam_output: params.bam_output)
+include { SAMTOOLS_INDEX }    from './nf_modules/samtools.mod.nf'  params(bam_output: params.bam_output)
 include { MULTIQC }           from './nf_modules/multiqc.mod.nf' 
 
 workflow {
@@ -92,6 +95,7 @@ workflow {
         FASTQC2         (TRIM_GALORE.out.reads, outdir, params.fastqc_args, params.verbose)
         BOWTIE2         (TRIM_GALORE.out.reads, outdir, params.bowtie2_args, params.verbose)
         SAMTOOLS_SORT   (BOWTIE2.out.bam, outdir, params.samtools_sort_args, params.verbose)
+        SAMTOOLS_INDEX  (SAMTOOLS_SORT.out.bam, outdir, params.samtools_index_args, params.verbose)
      
         // merging channels for MultiQC
         multiqc_ch = FASTQC.out.report.mix(
@@ -145,6 +149,7 @@ def helpMessage() {
         --- Bowtie 2
             |
             --- Samtools sort
+            --- Samtools index
     --- MultiQC*
         
     * This step runs only once ALL other jobs have completed.
@@ -155,7 +160,8 @@ def helpMessage() {
     FastQ Screen:   defaults (Bowtie 2; local mode)
     Trim Galore:    defaults (adapter auto-detection)
     Bowtie 2:       end-to-end mode; '--no-unal'; for paired-end files: '--no-mixed --no-discordant' (concordant PE alignmnents only)
-    Samtools sort
+    Samtools sort   defaults
+    Samtools index  defaults
 
     To add additional parameters to any of the programs, consider supplying tool-specific arguments (see --toolname_args="..." below).
 
@@ -202,7 +208,6 @@ def helpMessage() {
                                       to the Trim Galore User Guide, or run 'trim_galore --help' on the command line. As an example, to trim
                                       off the first 10bp from the 5' of R1 and 5bp of R2, use: 
                                       ' --trim_galore_args="--clip_r1 10 --clip_r2 5" '. [Default: None]
-
     
       --bowtie2_args="[str]"          This option can take any number of options that are compatible with Bowtie 2 to modify its
                                       default mapping behaviour. For more detailed information on available options please refer
@@ -210,11 +215,15 @@ def helpMessage() {
                                       run somewhat more stringent alignments for only 1 million sequences, use:
                                       ' --bowtie2_args="-u 1000000 --score_min L,0,-0.4" '. [Default: None]
 
-
       --samtools_sort_args="[str]"    This option can take any number of options that are compatible with 'samtools sort' to modify its default
                                       behaviour. For more detailed information on available options please refer to the Samtools documentation,
                                       or run 'samtools sort' on the command line. Please note that the format ="your options" needs to be
-                                      strictly adhered to in order to work correctly. [Default: None]                                      
+                                      strictly adhered to in order to work correctly. [Default: None]
+
+      --samtools_index_args="[str]"   This option can take any number of options that are compatible with 'samtools index' to modify its
+                                      default behaviour. For more detailed information on available options please refer
+                                      to the Samtools documentation, or run 'samtools index' on the command line. Please note that the format 
+                                      ="your options" needs to be strictly adhered to in order to work correctly. [Default: None]                                      
 
 
     Other options:

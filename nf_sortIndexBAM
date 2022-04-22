@@ -37,7 +37,6 @@ if (params.help){
 if (params.verbose){
     println ("[WORKFLOW] SAMTOOLS SORT ARGS: " + params.samtools_sort_args)
     println ("[WORKFLOW] SAMTOOLS INDEX ARGS:" + params.samtools_index_args)
-
 }
 
 
@@ -57,7 +56,7 @@ workflow {
 
     main:
         SAMTOOLS_SORT  (file_ch, outdir, params.samtools_sort_args, params.verbose)
-        SAMTOOLS_INDEX (SAMTOOLS_SORT.out.bam, outdir, params.samtools_sort_args, params.verbose)
+        SAMTOOLS_INDEX (SAMTOOLS_SORT.out.bam, outdir, params.samtools_index_args, params.verbose)
 
 }
 

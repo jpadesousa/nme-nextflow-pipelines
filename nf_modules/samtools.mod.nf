@@ -4,7 +4,7 @@ nextflow.enable.dsl=2
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
-params.bam_output = true
+params.bam_output = true // setting if the bam file should be published
 
 
 /* ========================================================================================
@@ -56,7 +56,7 @@ process SAMTOOLS_INDEX{
 	output:
 		path "*.bai", emit: bai
 
-		publishDir "$outputdir/aligned", mode: "link", overwrite: true
+		publishDir "$outputdir/aligned/bam", mode: "link", overwrite: true
 
     script:
 		// Verbose

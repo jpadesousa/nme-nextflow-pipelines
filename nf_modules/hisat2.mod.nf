@@ -1,6 +1,11 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+/* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.bam_output = true // setting if the bam file should be published
+
 
 /* ========================================================================================
     PROCESSES
@@ -21,7 +26,7 @@ process HISAT2 {
 		path "*stats.txt", emit: stats
 		val(single_end)  , emit: single_end
 		
-		publishDir "$outputdir/aligned/bam",  mode: "link", overwrite: true, pattern: "*bam"
+		publishDir "$outputdir/aligned/bam",  mode: "link", overwrite: true, pattern: "*bam", enabled: params.bam_output
 		publishDir "$outputdir/aligned/logs", mode: "link", overwrite: true, pattern: "*stats.txt"
 
 	script:

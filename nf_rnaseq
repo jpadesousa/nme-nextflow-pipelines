@@ -23,12 +23,14 @@ params.single_end   = false  // default mode is auto-detect. NOTE: params are ha
 params.help         = false
 params.list_genomes = false
 
-params.fastqc_args        = ''
-params.fastq_screen_args  = ''
-params.trim_galore_args   = ''
-params.hisat2_args        = ''
-params.featurecounts_args = ''
-params.multiqc_args       = ''
+params.fastqc_args         = ''
+params.fastq_screen_args   = ''
+params.trim_galore_args    = ''
+params.hisat2_args         = ''
+params.featurecounts_args  = ''
+params.multiqc_args        = ''
+params.samtools_sort_args  = ''
+params.samtools_index_args = '' 
 
 
 /* ========================================================================================
@@ -53,6 +55,8 @@ if (params.verbose){
     println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: "  + params.fastq_screen_args)
     println ("[WORKFLOW] TRIM GALORE ARGS: "       + params.trim_galore_args)
     println ("[WORKFLOW] HISAT2 ARGS ARE: "        + params.hisat2_args)
+    println ("[WORKFLOW] SAMTOOLS SORT ARGS: "     + params.samtools_sort_args)
+    println ("[WORKFLOW] SAMTOOLS INDEX ARGS: "    + params.samtools_index_args)
     println ("[WORKFLOW] FEATURECOUNTS ARGS ARE: " + params.featurecounts_args)
     println ("[WORKFLOW] MULTIQC ARGS: "           + params.multiqc_args)
 }
@@ -83,7 +87,9 @@ include { FASTQC }                     from './nf_modules/fastqc.mod.nf'
 include { FASTQC as FASTQC2 }          from './nf_modules/fastqc.mod.nf'
 include { FASTQ_SCREEN }               from './nf_modules/fastq_screen.mod.nf'
 include { TRIM_GALORE }                from './nf_modules/trim_galore.mod.nf'
-include { HISAT2 }                     from './nf_modules/hisat2.mod.nf'  params(genome: genome)
+include { HISAT2 }                     from './nf_modules/hisat2.mod.nf'  params(genome: genome, bam_output: false)
+include { SAMTOOLS_SORT }              from './nf_modules/samtools.mod.nf'  params(bam_output: params.bam_output)
+include { SAMTOOLS_INDEX }             from './nf_modules/samtools.mod.nf'  params(bam_output: params.bam_output)
 include { FEATURECOUNTS }              from './nf_modules/subread.mod.nf' params(genome: genome, strand: params.strand)
 include { FEATURECOUNTS_MERGE_COUNTS } from './nf_modules/subread.mod.nf'
 include { MULTIQC }                    from './nf_modules/multiqc.mod.nf' 
@@ -96,7 +102,9 @@ workflow {
         TRIM_GALORE                 (file_ch, outdir, params.trim_galore_args, params.verbose)
         FASTQC2                     (TRIM_GALORE.out.reads, outdir, params.fastqc_args, params.verbose)
         HISAT2                      (TRIM_GALORE.out.reads, outdir, params.hisat2_args, params.verbose)
-        FEATURECOUNTS               (HISAT2.out.bam, HISAT2.out.single_end, outdir, params.featurecounts_args, params.verbose)
+        SAMTOOLS_SORT               (HISAT2.out.bam, outdir, params.samtools_sort_args, params.verbose)
+        SAMTOOLS_INDEX              (SAMTOOLS_SORT.out.bam, outdir, params.samtools_index_args, params.verbose)
+        FEATURECOUNTS               (SAMTOOLS_SORT.out.bam, HISAT2.out.single_end, outdir, params.featurecounts_args, params.verbose)
 
         featurecounts_merge_counts_ch = FEATURECOUNTS.out.counts.collect()
         FEATURECOUNTS_MERGE_COUNTS  (featurecounts_merge_counts_ch, outdir, params.verbose)
@@ -154,7 +162,10 @@ def helpMessage() {
         --- FastQC
         --- HISAT2 
             |
-            featureCounts
+            --- Samtools sort
+            --- Samtools index
+                |
+                featureCounts
     --- MultiQC*
         
     * This step runs only once ALL other jobs have completed.
@@ -166,6 +177,8 @@ def helpMessage() {
     Trim Galore:    defaults (adapter auto-detection)
     HISAT2:         end-to-end mode ('--no-softclip'); '--no-unal'; for PE files: '--no-mixed --no-discordant' (concordant PE alignmnents only)
     featureCounts:  defaults (-B -C)
+    Samtools sort:  defaults
+    Samtools index: defaults
                     
     To add additional parameters to any of the programs, consider supplying tool-specific arguments (see --toolname_args="..." below).
 
@@ -225,6 +238,16 @@ def helpMessage() {
                                       As an example, to change the minimum number of overlapping bases in a read
                                       that is required for read assignment to 5, use: 
                                       ' --featurecounts_args="--minOverlap 5" '. [Default: --minOverlap 1]
+
+      --samtools_sort_args="[str]"    This option can take any number of options that are compatible with 'samtools sort' to modify its default
+                                      behaviour. For more detailed information on available options please refer to the Samtools documentation,
+                                      or run 'samtools sort' on the command line. Please note that the format ="your options" needs to be
+                                      strictly adhered to in order to work correctly. [Default: None]
+
+      --samtools_index_args="[str]"   This option can take any number of options that are compatible with 'samtools index' to modify its
+                                      default behaviour. For more detailed information on available options please refer
+                                      to the Samtools documentation, or run 'samtools index' on the command line. Please note that the format 
+                                      ="your options" needs to be strictly adhered to in order to work correctly. [Default: None]                                          
    
 
     Other options:
