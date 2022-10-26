@@ -167,12 +167,12 @@ def helpMessage() {
 
       -bg                             Sends the entire workflow into the background, thus disconnecting it from the terminal session.
                                       This option launches a daemon process (which will keep running on the headnode) that watches over
-                                      your workflow, and submits new jobs to the LSF queue as required. Use this option for big pipeline
+                                      your workflow, and submits new jobs to the SLURM queue as required. Use this option for big pipeline
                                       jobs, or whenever you do not want to watch the status progress yourself. Upon completion, the
                                       pipeline will send you an email with the job details. This option is HIGHLY RECOMMENDED!
 
       -process.executor=local         Temporarily changes where the workflow is executed to the 'local' machine. See also the nextflow.config
-                                      file for more details. [Default: lsf] 
+                                      file for more details. [Default: slurm] 
     
     <<
     """.stripIndent()

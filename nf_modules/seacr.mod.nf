@@ -59,8 +59,7 @@ process SEACR {
 		}
 
 		"""
-		module load seacr
-
-        seacr ${files_command} ${seacr_threshold} ${seacr_normalization} ${seacr_mode} "${output_name}${output_suffix}"
+		module load seacr/1.3
+        SEACR_1.3.sh ${files_command} ${seacr_threshold} ${seacr_normalization} ${seacr_mode} "${output_name}${output_suffix}"
     	"""
 }
