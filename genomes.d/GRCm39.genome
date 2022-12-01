@@ -8,4 +8,4 @@ star            ${GENOMES}/Mus_musculus/Ensembl/GRCm39/Sequence/STARIndex/genome
 bwa             ${GENOMES}/Mus_musculus/Ensembl/GRCm39/Sequence/BWAIndex/genome
 hisat2	        ${GENOMES}/Mus_musculus/Ensembl/GRCm39/Sequence/Hisat2Index/genome
 hisat2_splices	${GENOMES}/Mus_musculus/Ensembl/GRCm39/Sequence/Hisat2Index/splice_sites.txt
-gtf	        ${GENOMES}/Mus_musculus/Ensembl/GRCm39/Annotation/Genes/genes.gtf
+gtf	            ${GENOMES}/Mus_musculus/Ensembl/GRCm39/Annotation/Genes/genes.gtf
