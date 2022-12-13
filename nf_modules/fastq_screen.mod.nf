@@ -48,8 +48,8 @@ process FASTQ_SCREEN {
 		}
 
 		"""
-		module load fastq-screen
+		module load fastq_screen
 
-		fastq_screen --conf /cluster/work/nme/software/config/fastq_screen.conf $params.bisulfite $fastq_screen_args $reads
+		fastq_screen --conf /cluster/work/nme/software/config/fastq_screen.conf --aligner 'bowtie2' $params.bisulfite $fastq_screen_args $reads
 		"""
 }
