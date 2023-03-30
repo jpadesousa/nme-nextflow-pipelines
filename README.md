@@ -36,3 +36,4 @@ The pipelines were adapted from the repository https://github.com/s-andrews/next
 
 ### Nucleosome, Methylation and Transcription sequencing
 :file_folder: ```nf_bisulfite_scNMT```
+
