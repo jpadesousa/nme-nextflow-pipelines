@@ -6,10 +6,10 @@ nextflow.enable.dsl=2
     DEFAULT PARAMETERS
 ======================================================================================== */
 params.pbat 	     = false
-params.unmapped   	 = false
+params.unmapped      = false
 params.singlecell    = ""
 params.read_identity = ""
-
+params.bam_output    = true // setting if the bam file should be published
 
 /* ========================================================================================
     PROCESSES
@@ -33,7 +33,7 @@ process BISMARK {
 		tuple val(name), path ("*unmapped_reads_1.fq.gz"), optional: true, emit: unmapped1
 		tuple val(name), path ("*unmapped_reads_2.fq.gz"), optional: true, emit: unmapped2
 
-		publishDir "$outputdir/aligned/bam", 	 mode: "link", overwrite: true, pattern: "*bam"
+		publishDir "$outputdir/aligned/bam", 	 mode: "link", overwrite: true, pattern: "*bam", enabled: params.bam_output
 		publishDir "$outputdir/aligned/logs",    mode: "link", overwrite: true, pattern: "*report.txt"
 		publishDir "$outputdir/unaligned/fastq", mode: "link", overwrite: true, pattern: "*.fq.gz"
 
@@ -67,6 +67,11 @@ process BISMARK {
 
 		// Index
 		index = "--genome " + params.genome["bismark"]
+
+		// Unmapped reads
+		if (params.unmapped){
+			bismark_args += " --unmapped "
+		}
 
 		// Basename
 			/// adds Genome build and aligner to output name	

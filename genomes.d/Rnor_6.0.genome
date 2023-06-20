@@ -6,6 +6,4 @@ bowtie	        ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Sequence/BowtieInde
 bowtie2	        ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Sequence/Bowtie2Index/genome
 star            ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Sequence/STARIndex/genome
 bwa             ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Sequence/BWAIndex/genome
-hisat2	        
-hisat2_splices	
 gtf	            ${GENOMES}/Rattus_norvegicus/Ensembl/Rnor_6.0/Annotation/Genes/genes.gtf

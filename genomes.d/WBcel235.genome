@@ -6,6 +6,4 @@ bowtie	        ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/Bowti
 bowtie2	        ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/Bowtie2Index/genome
 star            ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/STARIndex/genome
 bwa             ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Sequence/BWAIndex/genome
-hisat2	        
-hisat2_splices	
 gtf	            ${GENOMES}/Caenorhabditis_elegans/Ensembl/WBcel235/Annotation/Genes/genes.gtf

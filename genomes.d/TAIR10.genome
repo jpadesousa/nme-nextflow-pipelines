@@ -6,6 +6,4 @@ bowtie	        ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Sequence/BowtieInd
 bowtie2	        ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Sequence/Bowtie2Index/genome
 star            ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Sequence/STARIndex/genome
 bwa             ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Sequence/BWAIndex/genome
-hisat2	        
-hisat2_splices	
 gtf	            ${GENOMES}/Arabidopsis_thaliana/Ensembl/TAIR10/Annotation/Genes/genes.gtf

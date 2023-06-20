@@ -6,6 +6,4 @@ bowtie	        ${GENOMES}/PhiX/Illumina/RTA/Sequence/BowtieIndex/genome
 bowtie2	        ${GENOMES}/PhiX/Illumina/RTA/Sequence/Bowtie2Index/genome
 star            ${GENOMES}/PhiX/Illumina/RTA/Sequence/STARIndex/genome
 bwa             ${GENOMES}/PhiX/Illumina/RTA/Sequence/BWAIndex/genome
-hisat2	        
-hisat2_splices	
 gtf	            ${GENOMES}/PhiX/Illumina/RTA/Annotation/Genes/genes.gtf

@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+/* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.bam_output = true // setting if the bam file should be published
 
 /* ========================================================================================
     PROCESSES
@@ -21,7 +25,7 @@ process BISMARK_DEDUPLICATION {
 		tuple val(name), path ("*bam"), emit: bam
 
 		publishDir "$outputdir/aligned/logs",              mode: "link", overwrite: true, pattern: "*report.txt"
-		publishDir "$outputdir/aligned/bam/deduplicated",  mode: "link", overwrite: true, pattern: "*bam"
+		publishDir "$outputdir/aligned/bam/deduplicated",  mode: "link", overwrite: true, pattern: "*bam", enabled: params.bam_output
 
     script:
 		// Verbose

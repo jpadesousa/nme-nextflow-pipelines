@@ -31,25 +31,30 @@ process FASTQ_SCREEN {
 		publishDir "$outputdir/qc/fastq_screen", mode: "link", overwrite: true
 
 	script:
-		// Verbose
+		
 		if (verbose){
-			println ("[MODULE] FASTQ SCREEN ARGS: " + fastq_screen_args)
+			println ("[MODULE] FASTQ SCREEN ARGS: "+ fastq_screen_args)
 		}
 
-		// Single-end
 		if (params.single_end){
 			// TODO: Add single-end parameter
 		}
-		else {
+		else{
 			// for paired-end files we only use Read 1 (as Read 2 tends to show the exact same thing)
 			if (reads instanceof List) {
 				reads = reads[0]
 			}
 		}
+		
+		if (params.bisulfite){
+			// println("Setting --bisulfite")
+			fastq_screen_args += " --bisulfite "
+			// println (fastq_screen_args)
+		}
 
 		"""
 		module load fastq_screen
 
-		fastq_screen --conf /cluster/work/nme/software/config/fastq_screen.conf --aligner 'bowtie2' $params.bisulfite $fastq_screen_args $reads
+		fastq_screen --conf /cluster/work/nme/software/config/fastq_screen.conf $fastq_screen_args $reads
 		"""
 }
