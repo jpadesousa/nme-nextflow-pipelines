@@ -5,9 +5,10 @@ nextflow.enable.dsl=2
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
+params.verbose    = true
+
 params.singlecell = false
 params.rrbs       = false
-params.verbose    = false
 params.pbat       = false
 params.nonCG      = false
 
@@ -18,7 +19,7 @@ params.nonCG      = false
 process BISMARK_METHYLATION_EXTRACTOR {
 	
 	label 'BismarkMethylationExtractor'
-	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
+	tag "$bam" // Adds name to job submission
 
     input:
 	    tuple val(name), path(bam)
@@ -39,20 +40,32 @@ process BISMARK_METHYLATION_EXTRACTOR {
 		publishDir "$outputdir/aligned/logs", 				  mode: "link", overwrite: true, pattern: "*.txt"
     
 	script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] BISMARK METHYLATION EXTRACTOR ARGS: " + bismark_methylation_extractor_args)
 		}
 
-		// Default options
-		bismark_methylation_extractor_args = bismark_methylation_extractor_args + " --gzip "
+
+		/* ==========
+			Arguments
+		========== */
+		bismark_methylation_extractor_args += " --gzip "
 		
-		// Single-cell
+
+		/* ==========
+			Single-cell
+		========== */
 		if (params.singlecell){
 			println ("FLAG SINGLE CELL SPECIFIED: PROCESSING ACCORDINGLY")
 		}
 
-		// Non-CpG methylation
+
+		/* ==========
+			Non-CpG methylation
+		========== */
 		if (params.nonCG){
 			if (verbose){
 				println ("FLAG nonCG specified: adding flag --CX ")
@@ -60,16 +73,21 @@ process BISMARK_METHYLATION_EXTRACTOR {
 			bismark_methylation_extractor_args +=  " --CX "
 		}
 
-		// Paired-end
+
+		/* ==========
+			Paired-end
+		========== */
 		isPE = isPairedEnd(bam)
 		if (isPE){
-			if (!params.rrbs && !params.singlecell && !params.pbat){ // not perform any ignoring behaviour for RRBS or single-cell libraries
+			// not perform any ignoring behaviour for RRBS or single-cell libraries
+			if (!params.rrbs && !params.singlecell && !params.pbat){
 				bismark_methylation_extractor_args +=  " --ignore_r2 2 "
 			}
 		}
 		else {
 			println("File seems to be single-end")
 		}
+
 		
 		"""
 		module load bismark

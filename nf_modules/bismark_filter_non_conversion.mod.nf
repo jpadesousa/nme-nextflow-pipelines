@@ -3,12 +3,18 @@ nextflow.enable.dsl=2
 
 
 /* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.verbose = true
+
+
+/* ========================================================================================
     PROCESSES
 ======================================================================================== */
 process BISMARK_FILTER_NON_CONVERSION {
 	
 	label 'bismarkFilterNonConversion'
-	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
+	tag "$bam" // Adds name to job submission
   	
     input:
 	    tuple val(name), path(bam)
@@ -26,13 +32,16 @@ process BISMARK_FILTER_NON_CONVERSION {
 		publishDir "$outputdir/aligned/bam",  mode: "link", overwrite: true, pattern: "*nonCG_removed_seqs.bam"
 
     script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] BISMARK FILTER NON-CONVERSION ARGS: " + filter_non_conversion_args)
 		}
-
+		
 		"""
-		module load samtools bismark/0.23.1dev
+		module load samtools bismark
 
 		filter_non_conversion ${filter_non_conversion_args} ${bam}
 		"""

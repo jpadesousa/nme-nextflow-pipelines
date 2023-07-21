@@ -2,6 +2,7 @@
 nextflow.enable.dsl=2
 
 
+
 /* ========================================================================================
     OUTPUT DIRECTORY
 ======================================================================================== */
@@ -14,17 +15,18 @@ if(params.outdir){
 }
 
 
-/* ========================================================================================
-    SKIP STEPS
-======================================================================================== */
-params.skip_fastq_screen = false
-
 
 /* ========================================================================================
     PARAMETERS
 ======================================================================================== */
+params.pbat         = false
+
+// PBAT
+if (params.pbat){
+    pbat = params.pbat
+}
+
 params.genome       = ''
-params.pbat         = '9'
 params.verbose      = false
 params.single_end   = false  // default mode is auto-detect. NOTE: params are handed over automatically
 params.help         = false
@@ -36,10 +38,10 @@ params.trim_galore_args                   = ''
 params.bismark_args                       = ''
 params.deduplicate_bismark_args           = ''
 params.bismark_methylation_extractor_args = ''
+params.bismark2bedGraph_args              = ''
 params.bismark2summary_args               = ''
 params.bismark2report_args                = ''
 params.multiqc_args                       = ''
-
 
 
 
@@ -57,13 +59,14 @@ if (params.list_genomes){
 }
 
 if (params.verbose){
-    println ("[WORKFLOW] FASTQC ARGS: "                             + params.fastqc_args)
-    println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: "                   + params.fastq_screen_args)
-    println ("[WORKFLOW] TRIM GALORE ARGS: "                        + params.trim_galore_args)
-    println ("[WORKFLOW] BISMARK ARGS ARE: "                        + params.bismark_args)
-    println ("[WORKFLOW] BISMARK DEDUPLICATION ARGS ARE: "          + params.deduplicate_bismark_args)
-    println ("[WORKFLOW] BISMARK METHYLATION EXTRACTOR ARGS ARE: "  + params.bismark_methylation_extractor_args)
+    println ("[WORKFLOW] FASTQC ARGS: "                            + params.fastqc_args)
+    println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: "                  + params.fastq_screen_args)
+    println ("[WORKFLOW] TRIM GALORE ARGS: "                       + params.trim_galore_args)
+    println ("[WORKFLOW] BISMARK ARGS ARE: "                       + params.bismark_args)
+    println ("[WORKFLOW] BISMARK DEDUPLICATION ARGS ARE: "         + params.deduplicate_bismark_args)
+    println ("[WORKFLOW] BISMARK METHYLATION EXTRACTOR ARGS ARE: " + params.bismark_methylation_extractor_args)
 }
+
 
 
 /* ========================================================================================
@@ -74,8 +77,8 @@ include { getGenome; listGenomes } from './nf_modules/genomes.mod.nf'
 if (params.list_genomes){
     listGenomes()  // this lists all available genomes, and exits
 }
-
 genome = getGenome(params.genome)
+
 
 
 /* ========================================================================================
@@ -85,70 +88,117 @@ include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 file_ch = makeFilesChannel(args)
 
 
+
 /* ========================================================================================
     WORKFLOW
 ======================================================================================== */
-include { FASTQC }                               from './nf_modules/fastqc.mod.nf'                         
-include { FASTQC as FASTQC2 }                    from './nf_modules/fastqc.mod.nf' 
+include { FASTQC }                                            from './nf_modules/fastqc.mod.nf'                         
+include { FASTQC as FASTQC2 }                                 from './nf_modules/fastqc.mod.nf' 
 
-include { FASTQ_SCREEN }                         from './nf_modules/fastq_screen.mod.nf' params(bisulfite: '--bisulfite')
+include { FASTQ_SCREEN }                                      from './nf_modules/fastq_screen.mod.nf'                   params(bisulfite: '--bisulfite')
 
-// Adding pbat flag for PBAT processing. For Trim Galore we pass on the number of bp that need to be clipped at the 5' end
-include { TRIM_GALORE }                          from './nf_modules/trim_galore.mod.nf' params(pbat: params.pbat)
+include { TRIM_GALORE }                                       from './nf_modules/trim_galore.mod.nf'                    params(                pbat: pbat)
 
-// Adding pbat flag for PBAT processing
-include { BISMARK }                              from './nf_modules/bismark.mod.nf' params(genome: genome, pbat: true)
-include { BISMARK_DEDUPLICATION }                from './nf_modules/bismark_deduplication.mod.nf'
+include { BISMARK }                                           from './nf_modules/bismark.mod.nf'                        params(genome: genome, pbat: pbat,  unmapped: true)
+include { BISMARK as BISMARK_UN1 }                            from './nf_modules/bismark.mod.nf'                        params(genome: genome, pbat: pbat,  read_identity: "1")
+include { BISMARK as BISMARK_UN2 }                            from './nf_modules/bismark.mod.nf'                        params(genome: genome, pbat: false, read_identity: "2")
 
-// Adding pbat flag for PBAT processing
-include { BISMARK_METHYLATION_EXTRACTOR }        from './nf_modules/bismark_methylation_extractor.mod.nf' params(pbat: true)
-include { BISMARK2REPORT }                       from './nf_modules/bismark2report.mod.nf'
-include { BISMARK2SUMMARY }                      from './nf_modules/bismark2summary.mod.nf'
+include { BISMARK_DEDUPLICATION }                             from './nf_modules/bismark_deduplication.mod.nf'
+include { BISMARK_DEDUPLICATION as BISMARK_DEDUP1}            from './nf_modules/bismark_deduplication.mod.nf'
+include { BISMARK_DEDUPLICATION as BISMARK_DEDUP2}            from './nf_modules/bismark_deduplication.mod.nf'
 
-include { MULTIQC }                              from './nf_modules/multiqc.mod.nf' 
+include { BISMARK_METHYLATION_EXTRACTOR }                     from './nf_modules/bismark_methylation_extractor.mod.nf'  params(pbat: pbat)
+include { BISMARK_METHYLATION_EXTRACTOR as METHXTRACT_UN1 }   from './nf_modules/bismark_methylation_extractor.mod.nf'
+include { BISMARK_METHYLATION_EXTRACTOR as METHXTRACT_UN2 }   from './nf_modules/bismark_methylation_extractor.mod.nf'
+
+include { BISMARK2BEDGRAPH }                                  from './nf_modules/bismark2bedGraph.mod.nf'               params(dirty_harry: true)
+
+include { BISMARK2REPORT }                                    from './nf_modules/bismark2report.mod.nf'
+include { BISMARK2SUMMARY }                                   from './nf_modules/bismark2summary.mod.nf'
+
+include { MULTIQC }                                           from './nf_modules/multiqc.mod.nf' 
 
 workflow {
 
     main:
         FASTQC                          (file_ch, outdir, params.fastqc_args, params.verbose)
         TRIM_GALORE                     (file_ch, outdir, params.trim_galore_args, params.verbose)
-        if (!params.skip_fastq_screen){  // Conditional to skip fastq_screen
         FASTQ_SCREEN                    (TRIM_GALORE.out.reads, outdir, params.fastq_screen_args, params.verbose)
-        }
         FASTQC2                         (TRIM_GALORE.out.reads, outdir, params.fastqc_args, params.verbose)
         BISMARK                         (TRIM_GALORE.out.reads, outdir, params.bismark_args, params.verbose)
         BISMARK_DEDUPLICATION           (BISMARK.out.bam, outdir, params.deduplicate_bismark_args, params.verbose)
-        BISMARK_METHYLATION_EXTRACTOR   (BISMARK_DEDUPLICATION.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
 
-        // Merging channels for MultiQC
-        multiqc_ch = FASTQC.out.report.mix(
-            TRIM_GALORE.out.report,
-            FASTQC2.out.report.ifEmpty([]),
-            BISMARK.out.report.ifEmpty([]),
+        BISMARK_UN1                     (BISMARK.out.unmapped1, outdir, params.bismark_args, params.verbose)
+        BISMARK_DEDUP1                  (BISMARK_UN1.out.bam, outdir, params.deduplicate_bismark_args, params.verbose)
+        
+        BISMARK_UN2                     (BISMARK.out.unmapped2, outdir, params.bismark_args, params.verbose) 
+        BISMARK_DEDUP2                  (BISMARK_UN2.out.bam, outdir, params.deduplicate_bismark_args, params.verbose)
+               
+        BISMARK_METHYLATION_EXTRACTOR   (BISMARK_DEDUPLICATION.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
+        METHXTRACT_UN1                  (BISMARK_DEDUP1.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
+        METHXTRACT_UN2                  (BISMARK_DEDUP2.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
+
+        // To merge all relevant CpG calls, we will need a join statement instead of mix
+        // left.join(right).view(); Joining occurs with the first element as the key
+        ch_bedGraph_unmapped = METHXTRACT_UN1.out.context_files_CG
+                         .join(METHXTRACT_UN2.out.context_files_CG, by: [0])
+
+        ch_bismark2bedGraph =  BISMARK_METHYLATION_EXTRACTOR.out.context_files_CG
+                         .join(ch_bedGraph_unmapped, by: [0])
+                         .map { it ->  [ it[0], [it[1], it[2], it[3]].flatten() ] }
+       
+        BISMARK2BEDGRAPH                (ch_bismark2bedGraph, outdir, params.bismark2bedGraph_args, params.verbose)
+      
+        // merging channels for Bismark reports
+        bismark_report_ch = BISMARK.out.bam.mix(
+            BISMARK.out.report,
+            BISMARK_UN1.out.bam.ifEmpty([]),
+            BISMARK_UN1.out.report.ifEmpty([]),
+            BISMARK_UN2.out.bam.ifEmpty([]),
+            BISMARK_UN2.out.report.ifEmpty([]),
             BISMARK_DEDUPLICATION.out.report.ifEmpty([]),
+            BISMARK_DEDUP1.out.report.ifEmpty([]),
+            BISMARK_DEDUP2.out.report.ifEmpty([]),
             BISMARK_METHYLATION_EXTRACTOR.out.report.ifEmpty([]),
-            BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([])
+            BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([]),
+            METHXTRACT_UN1.out.report.ifEmpty([]),
+            METHXTRACT_UN1.out.mbias.ifEmpty([]),
+            METHXTRACT_UN2.out.report.ifEmpty([]),
+            METHXTRACT_UN2.out.mbias.ifEmpty([]),
         ).collect()
 
-        // Add Fastq_screen to MultiQC channel
-        if (!params.skip_fastq_screen){
+        BISMARK2REPORT                   (bismark_report_ch, outdir, params.bismark2report_args, params.verbose)
 
-            multiqc_ch = multiqc_ch.mix(
-                FASTQ_SCREEN.out.report.ifEmpty([])
-                ).collect()
-
-        }
-
-        // Merging channels for Bismark reports
-        bismark_report_ch = BISMARK.out.bam.mix(
+        // merging channels for Bismark summary report
+        // PAIRED-END only as it fails with a mixture of single-end and paired-end files
+        bismark_summary_report_ch = BISMARK.out.bam.mix(
             BISMARK.out.report,
             BISMARK_DEDUPLICATION.out.report.ifEmpty([]),
             BISMARK_METHYLATION_EXTRACTOR.out.report.ifEmpty([]),
             BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([]),
         ).collect()
 
-        BISMARK2REPORT                   (bismark_report_ch, outdir, params.bismark2report_args, params.verbose)
-        BISMARK2SUMMARY                  (bismark_report_ch, outdir, params.bismark2summary_args, params.verbose)
+        BISMARK2SUMMARY                  (bismark_summary_report_ch, outdir, params.bismark2summary_args, params.verbose)
+        
+        // merging channels for MultiQC
+        multiqc_ch = FASTQC.out.report.mix(
+            TRIM_GALORE.out.report,
+            FASTQ_SCREEN.out.report.ifEmpty([]),
+            FASTQC2.out.report.ifEmpty([]),
+            BISMARK.out.report.ifEmpty([]),
+            BISMARK_UN1.out.report.ifEmpty([]),
+            BISMARK_UN2.out.report.ifEmpty([]),
+            BISMARK_DEDUPLICATION.out.report.ifEmpty([]),
+            BISMARK_DEDUP1.out.report.ifEmpty([]),
+            BISMARK_DEDUP2.out.report.ifEmpty([]),
+            BISMARK_METHYLATION_EXTRACTOR.out.report.ifEmpty([]),
+            BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([]),
+            METHXTRACT_UN1.out.report.ifEmpty([]),
+            METHXTRACT_UN1.out.mbias.ifEmpty([]),
+            METHXTRACT_UN2.out.report.ifEmpty([]),
+            METHXTRACT_UN2.out.mbias.ifEmpty([]),
+        ).collect()
+
         MULTIQC                          (multiqc_ch, outdir, params.multiqc_args, params.verbose)
 }
 
@@ -170,6 +220,7 @@ workflow.onComplete {
 }
 
 
+
 /* ========================================================================================
     HELP MESSAGE
 ======================================================================================== */
@@ -180,22 +231,45 @@ def helpMessage() {
 
     SYNOPSIS:
 
-    This workflow runs an entire bisulfite-seq processing pipeline for PBAT (post-bisulfite adaptor tagging) samples
-    on FastQ files. This includes QC, quality-/adapter trimming, contamination QC (post-trimming), alignments to a
-    genome using Bismark, deduplication, methylation extraction, coverage file generation, and finally generates an
-    aggregate MultiQC report. The workflow is suitable for PBAT-type bisulfite sequencing experiments, by default 
-    assuming 9N oligos for the pulldown reaction. Here is a graphical representation of the workflow:
+    This workflow runs an entire Bisulfite-seq processing pipeline on FastQ files, first for paired-end end file,
+    and then in single-end mode for unmapped files. This includes QC, quality-/adapter trimming, contamination QC (post-trimming), 
+    alignments to a genome using Bismark (see below), deduplication, methylation extraction, coverage file generation,
+    and finally generates aa aggregate MultiQC report.
+    The term ‘Dirty Harry’ was coined in ~2014 because it doesn’t seem to be the cleanest of methods:
+
+    (1) PE alignment to start, while grabbing the unmapped R1 and R2 reads out the end using the option ‘--unmapped’. 
+    Properly aligned PE reads should be methylation extracted using --no_overlap.
+    (2) unmapped R1 is then mapped SE
+    (3) unmapped R2 is then mapped SE (default mode, i.e. directional)
+    
+    Single-end aligned R1 and R2 can then be methylation extracted normally as they should in theory map to different places
+    in the genome anyway so don’t require attention to overlapping reads. Note that paired-end and single-end processing is
+    PE/SE specific until the methylation extraction stage. [CpG]* methylation calls of PE as well as both SE aligments are then
+    fed to a single bismark2bedGraph process to generate a single, merged coverage file (ends in "_DH.cov.gz").
+
+    Here is a graphical representation of the workflow:
 
     --- FastQC
-    --- Trim Galore 
+    --- Trim Galore
         |
         --- FastQ Screen
         --- FastQC
-        --- Bismark 
+        --- Bismark (PE)
             |
-            --- Bismark deduplication
+            --- Bismark deduplication (PE)
                 |
-                --- Bismark methylation extraction             
+                --- Bismark methylation extraction (PE) 
+            ---unmapped R1
+               |
+               ---Bismark deduplication (SE R1)
+                  |
+                  --- Bismark methylation extraction (SE R1) 
+            ---unmapped R2
+               |
+               --- Bismark deduplication (SE R2)
+                 |
+                 --- Bismark methylation extraction (SE R2) 
+        ---bismark2bedGraph (PE, SE R1, SE R2)
     --- bismark2report*
     --- bismark2summary*
     --- MultiQC*
@@ -206,11 +280,12 @@ def helpMessage() {
     ------------------------------------------------------------
     FastQC:                           defaults ('-q')
     FastQ Screen:                     '--bisulfite'
-    Trim Galore:                      adapter auto-detection; '--clip_r1 9 (--clip_r2 9)'
-    Bismark:                          '--pbat'
+    Trim Galore:                      adapter auto-detection; '--paired'
+    Bismark:                          PE: '--unmapped', SE R1: defaults, SE R2: defaults
     Bismark deduplication:            defaults
-    Bismark methylation extraction:   '--bedGraph --buffer 10G --parallel 4'                  
-    
+    Bismark methylation extraction:   '--bedGraph --buffer 10G --parallel 4'
+    bismark2bedGraph                  'dirty_harry'
+
     To add additional parameters to any of the programs, consider supplying tool-specific arguments (see --toolname_args="..." below).
 
 
@@ -219,7 +294,7 @@ def helpMessage() {
 
     USAGE:
     
-    nf_bisulfite_PBAT [options] --genome <genomeID> <input files>
+    nf_bisulfite_DirtyHarry [options] --genome <genomeID> <input files>
     
     Mandatory arguments:
     ====================
@@ -273,14 +348,17 @@ def helpMessage() {
                                       to run the extraction and coverage file generation for a genome containing thousands of scaffolds
                                       or contigs, use: ' --bismark_methylation_extractor_args="--gazillion" '. [Default: None]
 
+      --bismark2bedGraph_args="[str]" This option can take any number of options that are compatible with bismark2bedGraph to modify its
+                                      default behaviour. For more detailed information on available options please refer to the Bismark
+                                      User Guide, or run 'bismark2bedGraph --help' on the command line. As an example, to run the coverage file
+                                      generation for a genome containing thousands of scaffolds or contigs, use: 
+                                      ' --bismark2bedGraph_args="--gazillion" '. [Default: None]                           
+
 
     Other options:
     ==============
 
       --outdir [str]                  Path to the output directory. [Default: current working directory]
-
-      --pbat [int]                    Number of nucleotides used for the PBAT pulldown reaction. This number of bases will be removed
-                                      from the 5'-end of both R1 and R2 (if present) prior to mapping. Default: 9.
 
       --list_genomes                  List all genome builds that are currently available to choose from. To see this list
                                       of available genomes with more detailed information about paths and indexes, run
@@ -289,7 +367,7 @@ def helpMessage() {
       --single_end                    Force files of a read pair to be treated as single-end files. [Default: auto-detect]
       
       --verbose                       More verbose status messages. [Default: OFF]
-
+      
       --help                          Displays this help message and exits.
 
 

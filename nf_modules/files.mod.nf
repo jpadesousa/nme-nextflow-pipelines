@@ -5,12 +5,16 @@ nextflow.enable.dsl=2
 /* ========================================================================================
     FUNCTIONS
 ======================================================================================== */
+
 def makeFilesChannel(fileList) {    
     
     file_ch = Channel.fromFilePairs( getFileBaseNames(fileList), size:-1)
     return(file_ch)
 
 }
+
+
+
 
 def getFileBaseNames(fileList) {
 
@@ -34,12 +38,11 @@ def getFileBaseNames(fileList) {
             // lane1_TGGTTGTT_small_test_L001_R1_val_1.fq.gz
             // lane1_TGGTTGTT_small_test_L001_R3_val_2.fq.gz
 
-            if (s =~ /_val_/){
-                // println ("Input file '$s' looks like a Trim Galore paired-end file")
+            if (s =~ /_val_/){ // Trim Galore processed
+
                 matcher = s =~ /^(.*)_(R?[1234])_val_[12].(fastq|fq).gz$/
                 // in the above example, this would identify the following basename:
                 // lane1_TGGTTGTT_small_test_L001
-                // println (matcher[0])
                 if (matcher.matches()) {
                     if (! baseNames.containsKey(matcher[0][1])) {
                         baseNames[matcher[0][1]] = []
@@ -58,7 +61,6 @@ def getFileBaseNames(fileList) {
             else{ // not Trim Galore processed
                 matcher = s =~ /^(.*)_(R?[1234]).(fastq|fq).gz$/
 
-                // println (matcher[0])
                 if (matcher.matches()) {
                     if (! baseNames.containsKey(matcher[0][1])) {
                         baseNames[matcher[0][1]] = []
@@ -81,7 +83,6 @@ def getFileBaseNames(fileList) {
     for (s in baseNames) {
         pattern = s.key+"_{"+s.value.join(",")+"}.{fastq,fq}.gz"
         patterns.add(pattern)
-        // println("$pattern")
     }
     for (s in bareFiles) {
         pattern = s+".{fastq,fq}.gz"

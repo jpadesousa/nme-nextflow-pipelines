@@ -5,7 +5,9 @@ nextflow.enable.dsl=2
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
-params.bisulfite  = ''
+params.verbose    = true
+
+params.bisulfite  = false
 params.single_end = false
 
 
@@ -15,7 +17,7 @@ params.single_end = false
 process FASTQ_SCREEN {
 
 	label 'fastqScreen'
-	tag "$name" // Adds name to job submission instead of (1), (2) etc.
+	tag "$name" // Adds name to job submission
 	
 	input:
 		tuple val(name), path(reads)
@@ -24,18 +26,24 @@ process FASTQ_SCREEN {
 		val(verbose)
 
 	output:
-	  	//path "*png",  emit: png
 	  	path "*html", emit: html
 	  	path "*txt",  emit: report
 		  
 		publishDir "$outputdir/qc/fastq_screen", mode: "link", overwrite: true
 
 	script:
-		
+
+		/* ==========
+			Verbose
+		========== */		
 		if (verbose){
 			println ("[MODULE] FASTQ SCREEN ARGS: "+ fastq_screen_args)
 		}
 
+
+		/* ==========
+			File names
+		========== */	
 		if (params.single_end){
 			// TODO: Add single-end parameter
 		}
@@ -46,11 +54,14 @@ process FASTQ_SCREEN {
 			}
 		}
 		
+
+		/* ==========
+			Bisulfite
+		========== */		
 		if (params.bisulfite){
-			// println("Setting --bisulfite")
 			fastq_screen_args += " --bisulfite "
-			// println (fastq_screen_args)
 		}
+
 
 		"""
 		module load fastq_screen

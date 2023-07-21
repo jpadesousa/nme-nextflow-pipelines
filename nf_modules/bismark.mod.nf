@@ -5,11 +5,15 @@ nextflow.enable.dsl=2
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
+params.verbose       = true
+params.bam_output    = true // Setting if the bam file should be published
+
 params.pbat 	     = false
 params.unmapped      = false
-params.singlecell    = ""
-params.read_identity = ""
-params.bam_output    = true // setting if the bam file should be published
+params.ambiguous     = false
+params.singlecell    = false
+params.read_identity = ''
+
 
 /* ========================================================================================
     PROCESSES
@@ -17,7 +21,7 @@ params.bam_output    = true // setting if the bam file should be published
 process BISMARK {
 	
 	label 'bismark'
-	tag "$name" // Adds name to job submission instead of (1), (2) etc.
+	tag "$name" // Adds name to job submission
 		
     input:
 	    tuple val(name), path(reads)
@@ -26,37 +30,47 @@ process BISMARK {
 		val (verbose)
 
 	output:
-	    tuple val(name), path ("*bam"), emit: bam
-		path "*report.txt", 			emit: report
+	    tuple val(name), path("*bam"), emit: bam
+		path "*report.txt",  	       emit: report
 		
-		// we always pass back the original name so we can use .join() later on, e.g. for bismark2bedGraph
-		tuple val(name), path ("*unmapped_reads_1.fq.gz"), optional: true, emit: unmapped1
-		tuple val(name), path ("*unmapped_reads_2.fq.gz"), optional: true, emit: unmapped2
+		tuple val(name), path("*unmapped_reads_1.fq.gz"),  optional: true, emit: unmapped1
+		tuple val(name), path("*unmapped_reads_2.fq.gz"),  optional: true, emit: unmapped2
+        tuple val(name), path("*ambiguous_reads_1.fq.gz"), optional: true, emit: ambiguous1
+		tuple val(name), path("*ambiguous_reads_2.fq.gz"), optional: true, emit: ambiguous2
 
 		publishDir "$outputdir/aligned/bam", 	 mode: "link", overwrite: true, pattern: "*bam", enabled: params.bam_output
 		publishDir "$outputdir/aligned/logs",    mode: "link", overwrite: true, pattern: "*report.txt"
 		publishDir "$outputdir/unaligned/fastq", mode: "link", overwrite: true, pattern: "*.fq.gz"
 
     script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] BISMARK ARGS: " + bismark_args)
 		}
 
-		// Single-cell
+
+		/* ==========
+			Single-cell
+		========== */
 		if (params.singlecell){
 			bismark_args += " --non_directional "
 		}
-		else {
-		
-		}
 
-		// PBAT
+
+		/* ==========
+			PBAT
+		========== */
 		if (params.pbat){
 			bismark_args += " --pbat "
 		}
 
-		// File names
+
+		/* ==========
+			File names
+		========== */
 		readString = ""
 		if (reads instanceof List) {
 			readString = "-1 " + reads[0] + " -2 " + reads[1]
@@ -65,46 +79,76 @@ process BISMARK {
 			readString = reads
 		}
 
-		// Index
+
+		/* ==========
+			Index
+		========== */
 		index = "--genome " + params.genome["bismark"]
 
-		// Unmapped reads
+
+		/* ==========
+			Unmapped
+		========== */
 		if (params.unmapped){
 			bismark_args += " --unmapped "
 		}
+		
 
-		// Basename
-			/// adds Genome build and aligner to output name	
-		unmapped_name = ''	
+		/* ==========
+			Ambiguous
+		========== */
+		if (params.ambiguous){
+			bismark_args += " --ambiguous "
+		}
+
+
+		/* ==========
+			Basename
+		========== */
+		unmapped_name  = ''
+		ambiguous_name = ''
 		if (params.read_identity == "1" || params.read_identity == "2"){
 
+
+			// Unmapped and ambiguous reads
 			if (params.read_identity == "1"){
-				unmapped_name = name + "_unmapped_R1"
+				unmapped_name  = name + "_unmapped_R1"
+				ambiguous_name = name + "_ambiguous_R1"
 			}
 			else {
-				unmapped_name = name + "_unmapped_R2"
+				unmapped_name  = name + "_unmapped_R2"
+				ambiguous_name = name + "_ambiguous_R2"
 			}
 
-			if (bismark_args =~ /-hisat/){ // if HISAT2 was given on the command line
-				bismark_name = unmapped_name + "_" + params.genome["name"] + "_bismark_ht2"
+			// HISAT2
+			if (bismark_args =~ /-hisat/){
+				bismark_name = unmapped_name  + "_" + params.genome["name"] + "_bismark_ht2"
+				bismark_name = ambiguous_name + "_" + params.genome["name"] + "_bismark_ht2"
 			}
-			else { // default is Bowtie 2
-				bismark_name = unmapped_name + "_" + params.genome["name"] + "_bismark_bt2"
+			// Bowtie 2
+			else {
+				bismark_name = unmapped_name  + "_" + params.genome["name"] + "_bismark_bt2"
+				bismark_name = ambiguous_name + "_" + params.genome["name"] + "_bismark_bt2"
 			}
+
+
 		}
 		else {
 
-			if (bismark_args =~ /-hisat/){ // if HISAT2 was given on the command line
+			// HISAT2
+			if (bismark_args =~ /-hisat/){ 
 				bismark_name = name + "_" + params.genome["name"] + "_bismark_ht2"
 			}
-			else { // default is Bowtie 2
+			// Bowtie 2
+			else {
 				bismark_name = name + "_" + params.genome["name"] + "_bismark_bt2"
 			}
 		}	
 		
+
 		"""
 		module load bismark
 
-		bismark --parallel 1 --basename $bismark_name $index $bismark_args $readString
+		bismark --parallel 1 -p ${task.cpus} --basename $bismark_name $index $bismark_args $readString
 		"""
 }

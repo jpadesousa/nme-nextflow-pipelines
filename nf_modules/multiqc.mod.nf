@@ -3,6 +3,14 @@ nextflow.enable.dsl=2
 
 
 /* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.verbose = true
+
+params.prefix  = "" 
+
+
+/* ========================================================================================
     PROCESSES
 ======================================================================================== */
 process MULTIQC {
@@ -21,14 +29,18 @@ process MULTIQC {
 		publishDir "$outputdir/qc", mode: "link", overwrite: true
 
 	script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] MULTIQC ARGS: " + multiqc_args)
 		}
 
+
 		"""
 		module load multiqc
 
-		multiqc $multiqc_args -x work .
+		multiqc $multiqc_args -x work --filename ${params.prefix}multiqc_report.html .
 		"""
 }

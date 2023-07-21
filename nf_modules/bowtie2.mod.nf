@@ -5,8 +5,11 @@ nextflow.enable.dsl=2
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
+params.verbose    = true
+params.bam_output = true // Setting if the bam file should be published
+
 params.cutntag    = false
-params.bam_output = true // setting if the bam file should be published
+params.local      = false
 
 
 /* ========================================================================================
@@ -15,7 +18,7 @@ params.bam_output = true // setting if the bam file should be published
 process BOWTIE2 {
 
 		label 'bowtie2'
-		tag "$name" // Adds name to job submission instead of (1), (2) etc.
+		tag "$name" // Adds name to job submission
 
 	input:
 		tuple val(name), path(reads)
@@ -31,34 +34,62 @@ process BOWTIE2 {
 		publishDir "$outputdir/aligned/logs", mode: "link", overwrite: true, pattern: "*stats.txt"
 
 	script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] BOWTIE2 ARGS: " + bowtie2_args)
 		}
 
-		// Default options
+
+		/* ==========
+			Arguments
+		========== */
 		bowtie2_args +=  " --no-unal " // We don't need unaligned reads in the BAM file
 
-		// File names
+
+		/* ==========
+			Local alignment
+		========== */
+		// Ends might be soft clipped
+		if (params.local){
+			bowtie2_args +=  " --local "
+		}
+
+
+		/* ==========
+			File names
+		========== */
 		readString = ""
 		if (reads instanceof List) {
 			readString = "-1 " + reads[0] + " -2 " + reads[1]
-			bowtie2_args += " --no-discordant --no-mixed " // just output properly paired reads
+			bowtie2_args += " --no-discordant --no-mixed " // Just output properly paired reads
 		}
 		else {
 			readString = "-U " + reads
 		}
 
-		// CUT&Tag
+
+		/* ==========
+			CUT&Tag
+		========== */
 		if (params.cutntag) {
 			bowtie2_args += " --local --very-sensitive --phred33 -I 10 -X 700 "
 		}
 
-		// Index
+
+		/* ==========
+			Index
+		========== */
 		index = params.genome["bowtie2"]
 
-		// Basename
+
+		/* ==========
+			Basename
+		========== */
 		bowtie_name = name + "_" + params.genome["name"]
+
 
 		"""
 		module load bowtie2 samtools

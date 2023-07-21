@@ -5,6 +5,8 @@ nextflow.enable.dsl=2
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
+params.verbose	   = true
+
 params.dirty_harry = false
 
 
@@ -14,7 +16,7 @@ params.dirty_harry = false
 process BISMARK2BEDGRAPH {
 	
 	label 'bismark2bedGraph'
-	tag "$name" // Adds name to job submission instead of (1), (2) etc.
+	tag "$name" // Adds name to job submission
 			
     input:
 	    tuple val(name), path(reads)
@@ -30,18 +32,25 @@ process BISMARK2BEDGRAPH {
 		publishDir "$outputdir/aligned/methylation_bedgraph", mode: "link", overwrite: true, pattern: "*bedGraph.gz"
 
     script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] BISMARK2BEDGRAPH ARGS: " + bismark2bedGraph_args)
 		}
 
-		// Output name
+
+		/* ==========
+			Output name
+		========== */
 		if (params.dirty_harry){
 			output_name = name + "_DH.bedGraph.gz"
 		} 
 		else {
 			output_name = name + ".bedGraph.gz"
 		}
+
 
 		"""
 		module load bismark

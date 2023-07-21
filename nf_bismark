@@ -149,6 +149,7 @@ def helpMessage() {
       --single_end                    Force files of a read pair to be treated as single-end files. [Default: auto-detect]
       
       --verbose                       More verbose status messages. [Default: OFF]
+      
       --help                          Displays this help message and exits.
 
 

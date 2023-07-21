@@ -3,12 +3,18 @@ nextflow.enable.dsl=2
 
 
 /* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.verbose = true
+
+
+/* ========================================================================================
     PROCESSES
 ======================================================================================== */
 process MARK_DUPLICATES{	
 
 	label 'picard'
-	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
+	tag "$bam" // Adds name to job submission
 
 	input:
 		path(bam)
@@ -25,15 +31,24 @@ process MARK_DUPLICATES{
 		publishDir "$outputdir/aligned/logs",             mode: "link", overwrite: true, pattern: "*txt"
 
 	script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] MARK_DUPLICATES ARGS: " + mark_duplicates_args)
 		}
 		
-		// Basename
+
+		/* ==========
+			Basename
+		========== */
 		base_name = bam.toString() - ".sorted.bam"
 
-		// Mark duplicates
+
+		/* ==========
+			Mark duplicates
+		========== */
 		if ((mark_duplicates_args =~ /.*REMOVE_DUPLICATES=true.*/)) {
 			output_name = base_name + ".sorted.dedup.bam"
 		} else if (!(mark_duplicates_args =~ /.*REMOVE_DUPLICATES=true.*/) && (mark_duplicates_args =~ /.*REMOVE_SEQUENCING_DUPLICATES=true.*/)) {
@@ -44,6 +59,7 @@ process MARK_DUPLICATES{
 
 		"""
 		module load picard
+		
 		picard MarkDuplicates INPUT=${bam} OUTPUT=${output_name} ASSUME_SORTED=true METRICS_FILE=${base_name}.MarkDuplicates.metrics.txt ${mark_duplicates_args}
 		"""
 }

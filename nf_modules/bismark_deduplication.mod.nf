@@ -1,18 +1,21 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-/* ========================================================================================
-    DEFAULT PARAMETERS
-======================================================================================== */
-params.bam_output = true // setting if the bam file should be published
 
 /* ========================================================================================
-    PROCESSES
+	DEFAULT PARAMETERS
+======================================================================================== */
+params.verbose    = true
+params.bam_output = true // Setting if the bam file should be published
+
+
+/* ========================================================================================
+	PROCESSES
 ======================================================================================== */
 process BISMARK_DEDUPLICATION {
 	
 	label 'bismarkDeduplication'
-	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
+	tag "$bam" // Adds name to job submission
   	
     input:
 	    tuple val(name), path(bam)
@@ -28,12 +31,17 @@ process BISMARK_DEDUPLICATION {
 		publishDir "$outputdir/aligned/bam/deduplicated",  mode: "link", overwrite: true, pattern: "*bam", enabled: params.bam_output
 
     script:
-		// Verbose
+	
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] BISMARK DEDUPLICATION ARGS: " + deduplicate_bismark_args)
 		}
 
-		// Default options
+		/* ==========
+			Arguments
+		========== */
 		deduplicate_bismark_args += " --bam "
 
 		"""

@@ -1,0 +1,11 @@
+name            panTro6
+species         Pan_troglodytes
+fasta           /cluster/work/nme/data/jizhuo/Dropbox/panTro6/Sequence/WholeGenomeFasta/
+bismark         /cluster/work/nme/data/jizhuo/Dropbox/panTro6/Sequence/BismarkIndex/
+bowtie	        /cluster/work/nme/data/jizhuo/Dropbox/panTro6/Sequence/BowtieIndex/genome
+bowtie2	        /cluster/work/nme/data/jizhuo/Dropbox/panTro6/Sequence/Bowtie2Index/genome
+star            /cluster/work/nme/data/jizhuo/Dropbox/panTro6/Sequence/STARIndex/genome
+bwa             /cluster/work/nme/data/jizhuo/Dropbox/panTro6/Sequence/BWAIndex/genome
+hisat2	        /cluster/work/nme/data/jizhuo/Dropbox/panTro6/Sequence/Hisat2Index/genome
+hisat2_splices	/cluster/work/nme/data/jizhuo/Dropbox/panTro6/Sequence/Hisat2Index/splice_sites.txt
+gtf	        /cluster/work/nme/data/jizhuo/Dropbox/panTro6/Annotation/Genes/genes.gtf

@@ -3,6 +3,12 @@ nextflow.enable.dsl=2
 
 
 /* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.verbose = true
+
+
+/* ========================================================================================
     PROCESSES
 ======================================================================================== */
 process BISMARK2REPORT {
@@ -19,10 +25,14 @@ process BISMARK2REPORT {
 		publishDir "$outputdir/aligned/logs", mode: "link", overwrite: true
 
 	script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] BISMARK2REPORT ARGS: " + bismark2report_args)
 		}
+
 
 		"""
 		module load bismark

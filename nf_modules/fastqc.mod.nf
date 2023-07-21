@@ -3,11 +3,17 @@ nextflow.enable.dsl=2
 
 
 /* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.verbose    = true
+
+
+/* ========================================================================================
     PROCESSES
 ======================================================================================== */
 process FASTQC {
 
-	tag "$name" // Adds name to job submission instead of (1), (2) etc.
+	tag "$name" // Adds name to job submission
 
 	input:
 	  	tuple val(name), path(reads)
@@ -22,10 +28,14 @@ process FASTQC {
 		publishDir "$outputdir/qc/fastqc", mode: "link", overwrite: true
 
 	script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] FASTQC ARGS: " + fastqc_args)
 		}
+
 
 		"""
 		module load fastqc

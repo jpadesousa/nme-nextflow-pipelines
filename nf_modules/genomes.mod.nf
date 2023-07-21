@@ -35,12 +35,15 @@ def getGenome(name) {
 
 }
 
+
+
+
 def listGenomes(){
 
     println ("These genomes are currently available to choose from:")
     println ("=====================================================")
     scriptDir = workflow.projectDir + "/genomes.d/"
-    // println (scriptDir) // last slash is consumed
+
     allFiles = scriptDir.list()
 
     for( def file : allFiles.sort() ) {

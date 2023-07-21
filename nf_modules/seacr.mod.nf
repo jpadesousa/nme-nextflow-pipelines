@@ -3,6 +3,12 @@ nextflow.enable.dsl=2
 
 
 /* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.verbose = true
+
+
+/* ========================================================================================
     PROCESSES
 ======================================================================================== */
 process SEACR {	
@@ -19,18 +25,27 @@ process SEACR {
 		publishDir "$outputdir/aligned/seacr", mode: "link", overwrite: true
 
     script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] SEACR ARGS: " + seacr_args)
 		}
 
-		// File names, output name, and suffix
+
+		/* ==========
+			File names, output name, and suffix
+		========== */
 		if (bedgraph instanceof List) {
+
 			files_command   = bedgraph[0] + " " + bedgraph[1]
 			output_name     = bedgraph[0].toString() - ".bedgraph"
 			output_suffix   = ""
 			seacr_threshold = ""
+
 		} else {
+
 			files_command = bedgraph
 			output_name   = bedgraph.toString() - ".bedgraph"
 
@@ -42,24 +57,31 @@ process SEACR {
 				seacr_threshold = "0.01"
            		output_suffix = ".FDR_0.01"
 			}
+
 		}
 
-		// Normalization
+		/* ==========
+			Normalization
+		========== */
         if(!(seacr_args =~ /.*norm.*|.*non.*/)){
             seacr_normalization = "norm"
         } else {
 			seacr_normalization = (seacr_args =~ /norm|non/)[0]
 		}
 
-		// Mode
+		/* ==========
+			Mode
+		========== */
         if(!(seacr_args =~ /.*relaxed.*|.*stringent.*/)){
             seacr_mode = "stringent"
         } else {
 			seacr_mode = (seacr_args =~ /relaxed|stringent/)[0]
 		}
 
+
 		"""
 		module load seacr/1.3
+
         SEACR_1.3.sh ${files_command} ${seacr_threshold} ${seacr_normalization} ${seacr_mode} "${output_name}${output_suffix}"
     	"""
 }

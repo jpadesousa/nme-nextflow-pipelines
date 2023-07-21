@@ -3,12 +3,18 @@ nextflow.enable.dsl=2
 
 
 /* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.verbose = true
+
+
+/* ========================================================================================
     PROCESSES
 ======================================================================================== */
 process FEATURECOUNTS {	
 
     label "featureCounts"
-	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
+	tag "$bam" // Adds name to job submission
 
 	input:
 		path(bam)
@@ -24,19 +30,28 @@ process FEATURECOUNTS {
 	 	publishDir "$outputdir/aligned/counts", mode: "link", overwrite: true
 
 	script:
-        // Verbose
+
+  		/* ==========
+			Verbose
+		========== */  
 		if (verbose){
 			println ("[MODULE] FEATURECOUNTS ARGS: " + featurecounts_args)
 		}
 
-        // Default options
+
+		/* ==========
+			Arguments
+		========== */
             // -B  Only count read pairs that have both ends aligned.
             // -C  Do not count read pairs that have their two ends mapping
             //     to different chromosomes or mapping to same chromosome
             //     but on different strands.
         featurecounts_args = featurecounts_args + " -B -C "
 
-        // Strandedness
+
+		/* ==========
+			Strandedness
+		========== */
         if (params.strand == 'forward') {
             strandedness = 1
         } else if (params.strand == 'reverse') {
@@ -45,14 +60,24 @@ process FEATURECOUNTS {
             strandedness = 0
         }
 
-        // Paired-end or single-end
+
+		/* ==========
+			Paired-end or single-end
+		========== */
         paired_end = single_end ? '' : '-p'
 
-        // Basename
+
+		/* ==========
+			Basename
+		========== */
         basename = bam.toString() - ".bam"
 
-        // Annotation file
+
+		/* ==========
+			Annotation file
+		========== */
         annotation = params.genome["gtf"]
+        
         
 		"""
 		module load subread
@@ -67,6 +92,8 @@ process FEATURECOUNTS {
             ${bam}
 		"""
 }
+
+
 
 
 process FEATURECOUNTS_MERGE_COUNTS {

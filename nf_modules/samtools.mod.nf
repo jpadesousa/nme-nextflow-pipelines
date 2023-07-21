@@ -1,10 +1,12 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
-params.bam_output = true // setting if the bam file should be published
+params.verbose    = true
+params.bam_output = true // Setting if the bam file should be published
 
 
 /* ========================================================================================
@@ -13,7 +15,7 @@ params.bam_output = true // setting if the bam file should be published
 process SAMTOOLS_SORT{	
     
 	label 'samtools'
-	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
+	tag "$bam" // Adds name to job submission
 
 	input:
 		path(bam)
@@ -27,13 +29,20 @@ process SAMTOOLS_SORT{
 		publishDir "$outputdir/aligned/bam", mode: "link", overwrite: true, enabled: params.bam_output
 
     script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] SAMTOOLS SORT ARGS: " + samtools_sort_args)
 		}
 
-		// Basename
+
+		/* ==========
+			Basename
+		========== */
 		basename = bam.toString() - ".bam"
+
 
 		"""
 		module load samtools
@@ -42,10 +51,13 @@ process SAMTOOLS_SORT{
     	"""
 }
 
+
+
+
 process SAMTOOLS_INDEX{	
     
 	label 'samtools'
-	tag "$bam" // Adds name to job submission instead of (1), (2) etc.
+	tag "$bam" // Adds name to job submission
 
 	input:
 		path(bam)
@@ -59,11 +71,15 @@ process SAMTOOLS_INDEX{
 		publishDir "$outputdir/aligned/bam", mode: "link", overwrite: true
 
     script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] SAMTOOLS INDEX ARGS: " + samtools_index_args)
 		}
 		
+
 		"""
 		module load samtools
 

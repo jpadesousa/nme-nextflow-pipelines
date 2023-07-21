@@ -5,6 +5,8 @@ nextflow.enable.dsl=2
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
+params.verbose    = true
+
 params.singlecell = false
 params.rrbs       = false
 params.verbose    = false
@@ -18,8 +20,8 @@ params.nome       = false
 process COVERAGE2CYTOSINE {
 
 	label 'coverage2Cytosine'
-	tag "$coverage_file" // Adds name to job submission instead of (1), (2) etc.
-
+	tag "$coverage_file" // Adds name to job submission
+	
 	input:
 		path(coverage_file)
 		val(outputdir)
@@ -34,27 +36,42 @@ process COVERAGE2CYTOSINE {
 		publishDir "$outputdir/aligned/methylation_coverage", mode: "link", overwrite: true, pattern: "*.cov*"
 
 	script:
-		// Genome
+
+		/* ==========
+			Genome
+		========== */
 		genome = params.genome["bismark"]
 
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] BISMARK COVERAGE2CYTOSINE ARGS: " + coverage2cytosine_args)
 			println ("Bismark Genome is: " + genome)
 		}
 
-		// Basename
-			// Removing the file extension from the input file name
-			// (https://www.nextflow.io/docs/latest/script.html#removing-part-of-a-string)
+
+		/* ==========
+			Basename
+		========== */
+		// Removing the file extension from the input file name
+		// (https://www.nextflow.io/docs/latest/script.html#removing-part-of-a-string)
 		outfile_basename = coverage_file.toString()  // Important to convert nextflow.processor.TaskPath object to String first
 		outfile_basename = (outfile_basename - ~/.bismark.cov.gz$/)
 		outfile_basename = (outfile_basename - ~/.cov.gz$/)
 		outfile_basename = (outfile_basename - ~/.cov$/)
 
-		// Default options
+
+		/* ==========
+			Arguments
+		========== */
 		coverage2cytosine_args = coverage2cytosine_args + " --gzip "
 
-		// NOMe-Seq
+
+		/* ==========
+			NOMe-Seq
+		========== */
 		if (params.nome){
 			if (verbose){
 				println ("NOMe-seq outfile basename: $outfile_basename")

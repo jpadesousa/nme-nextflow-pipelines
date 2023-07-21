@@ -1,10 +1,12 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
+
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
-params.bam_output = true // setting if the bam file should be published
+params.verbose    = true
+params.bam_output = true // Setting if the bam file should be published
 
 
 /* ========================================================================================
@@ -13,7 +15,7 @@ params.bam_output = true // setting if the bam file should be published
 process HISAT2 {
 
 	label 'hisat2'
-	tag "$name" // Adds name to job submission instead of (1), (2) etc.
+	tag "$name" // Adds name to job submission
 
 	input:
 		tuple val(name), path(reads)
@@ -30,15 +32,24 @@ process HISAT2 {
 		publishDir "$outputdir/aligned/logs", mode: "link", overwrite: true, pattern: "*stats.txt"
 
 	script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] HISAT2 ARGS: " + hisat2_args)
 		}
 
-		// Default options
+
+		/* ==========
+			Arguments
+		========== */
 		hisat2_args = hisat2_args + " --no-unal --no-softclip "
 
-		// File names
+
+		/* ==========
+			File names
+		========== */
 		readString = ""
 		if (reads instanceof List) {
 			readString  = "-1 " + reads[0] + " -2 " + reads[1]
@@ -50,15 +61,25 @@ process HISAT2 {
 			single_end  = true
 		}
 
-		// Index
+
+		/* ==========
+			Index
+		========== */
 		index = params.genome["hisat2"]
 
-		// Splices
-			// TODO: need to add a check if the splice-site infile is present or not, and leave out this parameter otherwise
+		
+		/* ==========
+			Splices
+		========== */
+		// TODO: need to add a check if the splice-site infile is present or not, and leave out this parameter otherwise
 		splices = " --known-splicesite-infile " + params.genome["hisat2_splices"]
 
-		// Basename
+
+		/* ==========
+			Basename
+		========== */
 		hisat_name = name + "_" + params.genome["name"]
+
 
 		"""
 		module load hisat2 samtools

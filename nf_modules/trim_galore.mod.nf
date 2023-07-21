@@ -5,14 +5,11 @@ nextflow.enable.dsl=2
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
-params.singlecell          = ''
-params.rrbs                = ''
-params.pbat                = ''
-params.clock               = false
+params.verbose    = true
 
-// For Epigenetic Clock Processing
-params.three_prime_clip_R1 = ''
-params.three_prime_clip_R2 = ''
+params.singlecell = false
+params.rrbs		  = false
+params.pbat		  = false
 
 
 /* ========================================================================================
@@ -21,7 +18,7 @@ params.three_prime_clip_R2 = ''
 process TRIM_GALORE {
 
 	label 'trimGalore'
-	tag "$name" // Adds name to job submission instead of (1), (2) etc.
+	tag "$name" // Adds name to job submission
 
 	input:
 		tuple val(name), path(reads)
@@ -37,49 +34,56 @@ process TRIM_GALORE {
 		publishDir "$outputdir/unaligned/logs",  mode: "link", overwrite: true, pattern: "*trimming_report.txt"
 
 	script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */	
 		if (verbose){
 			println ("[MODULE] TRIM GALORE ARGS: " + trim_galore_args)
 		}
 
-		// Paired-end
+
+		/* ==========
+			Paired-end
+		========== */
 		pairedString = ""
 		if (reads instanceof List) {
 			pairedString = "--paired"
 		}
 
-		// Epigenetic Clock Processing
-		if (params.clock){
-			trim_galore_args += " --breitling "
-		}
-		else {
-			if (params.singlecell){
-				trim_galore_args += " --clip_r1 6 "
-				if (pairedString == "--paired"){
-					trim_galore_args += " --clip_r2 6 "
-				}
-			}
 
-			if (params.rrbs){
-				trim_galore_args = trim_galore_args + " --rrbs "
-			}
-
-			if  (params.pbat){
-				trim_galore_args = trim_galore_args + " --clip_r1 $params.pbat "
-				if (pairedString == "--paired"){
-					trim_galore_args = trim_galore_args + " --clip_r2 $params.pbat "
-				}
-			}
-
-			// Second step of Clock processing:
-			if (params.three_prime_clip_R1 && params.three_prime_clip_R2){
-				trim_galore_args +=	" --three_prime_clip_R1 ${params.three_prime_clip_R1} --three_prime_clip_R2 ${params.three_prime_clip_R2} "
+		/* ==========
+			Single-cell
+		========== */
+		if (params.singlecell == '6'){
+			trim_galore_args = trim_galore_args + " --clip_r1 $params.singlecell "
+			if (pairedString == "--paired"){
+				trim_galore_args = trim_galore_args + " --clip_r2 $params.singlecell "
 			}
 		}
+
+		/* ==========
+			RRBS
+		========== */
+		if (params.rrbs){
+			trim_galore_args = trim_galore_args + " --rrbs "
+		}
+
+
+		/* ==========
+			PBAT
+		========== */
+		if (params.pbat == '9'){
+			trim_galore_args = trim_galore_args + " --clip_r1 $params.pbat "
+			if (pairedString == "--paired"){
+				trim_galore_args = trim_galore_args + " --clip_r2 $params.pbat "
+			}
+		}
+
 
 		"""
 		module load trimgalore
 
-		trim_galore -j 4 $trim_galore_args ${pairedString} ${reads}
+		trim_galore --cores ${task.cpus} $trim_galore_args ${pairedString} ${reads}
 		"""
 }

@@ -3,6 +3,12 @@ nextflow.enable.dsl=2
 
 
 /* ========================================================================================
+    DEFAULT PARAMETERS
+======================================================================================== */
+params.verbose = true
+
+
+/* ========================================================================================
     PROCESSES
 ======================================================================================== */
 process MACS_CALLPEAK {	
@@ -26,12 +32,18 @@ process MACS_CALLPEAK {
 		publishDir "$outputdir/aligned/macs", mode: "link", overwrite: true
 
     script:
-		// Verbose
+
+		/* ==========
+			Verbose
+		========== */
 		if (verbose){
 			println ("[MODULE] MACS CALLPEAK ARGS: " + macs_callpeak_args)
 		}
 
-		// File names and output name
+
+		/* ==========
+			File names and output name
+		========== */
 		if (files instanceof List) {
 			files_command = "-t " + files[0] + " -c " + files[1]
 			output_name   = files[0].toString()[0..<files[0].toString().lastIndexOf('.')]
@@ -40,11 +52,14 @@ process MACS_CALLPEAK {
 			output_name   = files.toString()[0..<files.toString().lastIndexOf('.')]
 		}
 
-        // Effective genome size
+
+		/* ==========
+			Effective genome size
+		========== */
         if (params.genome["name"] == 'GRCh37' || params.genome["name"] == 'GRCh38') {
 			gsize = 'hs'
 		}
-        if (params.genome["name"] == 'GRCm38') {
+        if (params.genome["name"] == 'GRCm38' || params.genome["name"] == 'GRCm39') {
 			gsize = 'mm'
 		}
         if (params.genome["name"] == 'WBcel235') {
@@ -56,6 +71,7 @@ process MACS_CALLPEAK {
 
 		"""
 		module load macs
+
 		macs3 callpeak ${files_command} -g ${gsize} -n ${output_name} $macs_callpeak_args
     	"""
 }
