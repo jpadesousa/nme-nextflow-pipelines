@@ -11,7 +11,7 @@ params.verbose = true
 /* ========================================================================================
     PROCESSES
 ======================================================================================== */
-process MARK_DUPLICATES{	
+process MARK_DUPLICATES {	
 
 	label 'picard'
 	tag "$bam" // Adds name to job submission

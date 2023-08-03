@@ -6,23 +6,24 @@ nextflow.enable.dsl=2
 	DEFAULT PARAMETERS
 ======================================================================================== */
 params.verbose = true
+params.cutntag = false
 
 
 /* ========================================================================================
 	PROCESSES
 ======================================================================================== */
-process BEDTOOLS_GENOMECOV{	
+process BEDTOOLS_GENOMECOV {
 
 	tag "$bam" // Adds name to job submission
 
 	input:
-		tuple val(name), path(bam)
+		path(bam)
 		val(outputdir)
 		val(bedtools_genomecov_args)
 		val(verbose)
 
 	output:
-		tuple val(name), path "*bedgraph", emit: bedgraph
+		path("*bedgraph"), emit: bedgraph
 		publishDir "$outputdir/aligned/bedgraph", mode: "link", overwrite: true
 
     script:

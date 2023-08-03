@@ -2,12 +2,10 @@
 nextflow.enable.dsl=2
 
 
-
 /* ========================================================================================
     OUTPUT DIRECTORY
 ======================================================================================== */
 params.outdir = false
-
 if(params.outdir){
     outdir = params.outdir
 } else {
@@ -15,34 +13,25 @@ if(params.outdir){
 }
 
 
-
 /* ========================================================================================
     PARAMETERS
 ======================================================================================== */
-params.pbat = false
-
-// PBAT (Trim Galore --clip_R1 9 --clip_R2 9)
-if (params.pbat){
-    params.pbat = '9'
-}
-
-params.genome       = ''
-params.verbose      = false
-params.single_end   = false  // default mode is auto-detect. NOTE: params are handed over automatically
-params.help         = false
-params.list_genomes = false
-
 params.fastqc_args                        = ''
 params.fastq_screen_args                  = ''
 params.trim_galore_args                   = ''
 params.bismark_args                       = ''
+params.filter_non_conversion_args         = ''
 params.deduplicate_bismark_args           = ''
 params.bismark_methylation_extractor_args = ''
-params.bismark2bedGraph_args              = ''
 params.bismark2summary_args               = ''
 params.bismark2report_args                = ''
 params.multiqc_args                       = ''
 
+params.genome       = ''
+params.verbose      = false
+params.single_end   = false  // default mode is auto-detect. NOTE: params are automatically handed over
+params.list_genomes = false
+params.help         = false
 
 
 /* ========================================================================================
@@ -63,10 +52,11 @@ if (params.verbose){
     println ("[WORKFLOW] FASTQ SCREEN ARGS ARE: "                  + params.fastq_screen_args)
     println ("[WORKFLOW] TRIM GALORE ARGS: "                       + params.trim_galore_args)
     println ("[WORKFLOW] BISMARK ARGS ARE: "                       + params.bismark_args)
+    println ("[WORKFLOW] BISMARK FILTER NON-CONVERSION ARGS ARE: " + params.filter_non_conversion_args)
     println ("[WORKFLOW] BISMARK DEDUPLICATION ARGS ARE: "         + params.deduplicate_bismark_args)
     println ("[WORKFLOW] BISMARK METHYLATION EXTRACTOR ARGS ARE: " + params.bismark_methylation_extractor_args)
+    println ("[WORKFLOW] MULTIQC ARGS: "                           + params.multiqc_args)
 }
-
 
 
 /* ========================================================================================
@@ -80,7 +70,6 @@ if (params.list_genomes){
 genome = getGenome(params.genome)
 
 
-
 /* ========================================================================================
     FILES CHANNEL
 ======================================================================================== */
@@ -88,117 +77,59 @@ include { makeFilesChannel; getFileBaseNames } from './nf_modules/files.mod.nf'
 file_ch = makeFilesChannel(args)
 
 
-
 /* ========================================================================================
     WORKFLOW
 ======================================================================================== */
-include { FASTQC }                                            from './nf_modules/fastqc.mod.nf'                         
-include { FASTQC as FASTQC2 }                                 from './nf_modules/fastqc.mod.nf' 
+include { FASTQC }                                from './nf_modules/fastqc.mod.nf'
+include { FASTQC as FASTQC2 }                     from './nf_modules/fastqc.mod.nf'
 
-include { FASTQ_SCREEN }                                      from './nf_modules/fastq_screen.mod.nf'                   params(bisulfite: '--bisulfite')
+include { FASTQ_SCREEN }                          from './nf_modules/fastq_screen.mod.nf'          params(bisulfite: '--bisulfite')
+include { TRIM_GALORE }                           from './nf_modules/trim_galore.mod.nf'
 
-include { TRIM_GALORE }                                       from './nf_modules/trim_galore.mod.nf'                    params(                pbat: pbat)
+include { BISMARK }                               from './nf_modules/bismark.mod.nf'               params(genome: genome, bam_output: true)
+include { BISMARK_FILTER_NON_CONVERSION }         from './nf_modules/bismark_filter_non_conversion.mod.nf'
+include { BISMARK_DEDUPLICATION }                 from './nf_modules/bismark_deduplication.mod.nf' params(bam_output: true)
+include { BISMARK_METHYLATION_EXTRACTOR }         from './nf_modules/bismark_methylation_extractor.mod.nf'
+include { BISMARK2REPORT }                        from './nf_modules/bismark2report.mod.nf'
+include { BISMARK2SUMMARY }                       from './nf_modules/bismark2summary.mod.nf'
 
-include { BISMARK }                                           from './nf_modules/bismark.mod.nf'                        params(genome: genome, pbat: pbat,  unmapped: true)
-include { BISMARK as BISMARK_UN1 }                            from './nf_modules/bismark.mod.nf'                        params(genome: genome, pbat: pbat,  read_identity: "1")
-include { BISMARK as BISMARK_UN2 }                            from './nf_modules/bismark.mod.nf'                        params(genome: genome, pbat: false, read_identity: "2")
-
-include { BISMARK_DEDUPLICATION }                             from './nf_modules/bismark_deduplication.mod.nf'
-include { BISMARK_DEDUPLICATION as BISMARK_DEDUP1}            from './nf_modules/bismark_deduplication.mod.nf'
-include { BISMARK_DEDUPLICATION as BISMARK_DEDUP2}            from './nf_modules/bismark_deduplication.mod.nf'
-
-include { BISMARK_METHYLATION_EXTRACTOR }                     from './nf_modules/bismark_methylation_extractor.mod.nf'  params(pbat: pbat)
-include { BISMARK_METHYLATION_EXTRACTOR as METHXTRACT_UN1 }   from './nf_modules/bismark_methylation_extractor.mod.nf'
-include { BISMARK_METHYLATION_EXTRACTOR as METHXTRACT_UN2 }   from './nf_modules/bismark_methylation_extractor.mod.nf'
-
-include { BISMARK2BEDGRAPH }                                  from './nf_modules/bismark2bedGraph.mod.nf'               params(dirty_harry: true)
-
-include { BISMARK2REPORT }                                    from './nf_modules/bismark2report.mod.nf'
-include { BISMARK2SUMMARY }                                   from './nf_modules/bismark2summary.mod.nf'
-
-include { MULTIQC }                                           from './nf_modules/multiqc.mod.nf' 
+include { MULTIQC }                               from './nf_modules/multiqc.mod.nf'
 
 workflow {
 
     main:
-        FASTQC                          (file_ch, outdir, params.fastqc_args, params.verbose)
-        TRIM_GALORE                     (file_ch, outdir, params.trim_galore_args, params.verbose)
-        FASTQ_SCREEN                    (TRIM_GALORE.out.reads, outdir, params.fastq_screen_args, params.verbose)
-        FASTQC2                         (TRIM_GALORE.out.reads, outdir, params.fastqc_args, params.verbose)
-        BISMARK                         (TRIM_GALORE.out.reads, outdir, params.bismark_args, params.verbose)
-        BISMARK_DEDUPLICATION           (BISMARK.out.bam, outdir, params.deduplicate_bismark_args, params.verbose)
+        FASTQC                        (file_ch, outdir, params.fastqc_args, params.verbose)
+        TRIM_GALORE                   (file_ch, outdir, params.trim_galore_args, params.verbose)
+        FASTQ_SCREEN                  (TRIM_GALORE.out.reads, outdir, params.fastq_screen_args, params.verbose)
+        FASTQC2                       (TRIM_GALORE.out.reads, outdir, params.fastqc_args, params.verbose)
+        BISMARK                       (TRIM_GALORE.out.reads, outdir, params.bismark_args, params.verbose)
+        BISMARK_FILTER_NON_CONVERSION (BISMARK.out.bam, outdir, params.filter_non_conversion_args, params.verbose)
+        BISMARK_DEDUPLICATION         (BISMARK_FILTER_NON_CONVERSION.out.bam, outdir, params.deduplicate_bismark_args, params.verbose)
+        BISMARK_METHYLATION_EXTRACTOR (BISMARK_DEDUPLICATION.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
 
-        BISMARK_UN1                     (BISMARK.out.unmapped1, outdir, params.bismark_args, params.verbose)
-        BISMARK_DEDUP1                  (BISMARK_UN1.out.bam, outdir, params.deduplicate_bismark_args, params.verbose)
-        
-        BISMARK_UN2                     (BISMARK.out.unmapped2, outdir, params.bismark_args, params.verbose) 
-        BISMARK_DEDUP2                  (BISMARK_UN2.out.bam, outdir, params.deduplicate_bismark_args, params.verbose)
-               
-        BISMARK_METHYLATION_EXTRACTOR   (BISMARK_DEDUPLICATION.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
-        METHXTRACT_UN1                  (BISMARK_DEDUP1.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
-        METHXTRACT_UN2                  (BISMARK_DEDUP2.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
-
-        // To merge all relevant CpG calls, we will need a join statement instead of mix
-        // left.join(right).view(); Joining occurs with the first element as the key
-        ch_bedGraph_unmapped = METHXTRACT_UN1.out.context_files_CG
-                         .join(METHXTRACT_UN2.out.context_files_CG, by: [0])
-
-        ch_bismark2bedGraph =  BISMARK_METHYLATION_EXTRACTOR.out.context_files_CG
-                         .join(ch_bedGraph_unmapped, by: [0])
-                         .map { it ->  [ it[0], [it[1], it[2], it[3]].flatten() ] }
-       
-        BISMARK2BEDGRAPH                (ch_bismark2bedGraph, outdir, params.bismark2bedGraph_args, params.verbose)
-      
-        // merging channels for Bismark reports
-        bismark_report_ch = BISMARK.out.bam.mix(
-            BISMARK.out.report,
-            BISMARK_UN1.out.bam.ifEmpty([]),
-            BISMARK_UN1.out.report.ifEmpty([]),
-            BISMARK_UN2.out.bam.ifEmpty([]),
-            BISMARK_UN2.out.report.ifEmpty([]),
-            BISMARK_DEDUPLICATION.out.report.ifEmpty([]),
-            BISMARK_DEDUP1.out.report.ifEmpty([]),
-            BISMARK_DEDUP2.out.report.ifEmpty([]),
-            BISMARK_METHYLATION_EXTRACTOR.out.report.ifEmpty([]),
-            BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([]),
-            METHXTRACT_UN1.out.report.ifEmpty([]),
-            METHXTRACT_UN1.out.mbias.ifEmpty([]),
-            METHXTRACT_UN2.out.report.ifEmpty([]),
-            METHXTRACT_UN2.out.mbias.ifEmpty([]),
-        ).collect()
-
-        BISMARK2REPORT                   (bismark_report_ch, outdir, params.bismark2report_args, params.verbose)
-
-        // merging channels for Bismark summary report
-        // PAIRED-END only as it fails with a mixture of single-end and paired-end files
-        bismark_summary_report_ch = BISMARK.out.bam.mix(
-            BISMARK.out.report,
-            BISMARK_DEDUPLICATION.out.report.ifEmpty([]),
-            BISMARK_METHYLATION_EXTRACTOR.out.report.ifEmpty([]),
-            BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([]),
-        ).collect()
-
-        BISMARK2SUMMARY                  (bismark_summary_report_ch, outdir, params.bismark2summary_args, params.verbose)
-        
         // merging channels for MultiQC
         multiqc_ch = FASTQC.out.report.mix(
             TRIM_GALORE.out.report,
             FASTQ_SCREEN.out.report.ifEmpty([]),
             FASTQC2.out.report.ifEmpty([]),
             BISMARK.out.report.ifEmpty([]),
-            BISMARK_UN1.out.report.ifEmpty([]),
-            BISMARK_UN2.out.report.ifEmpty([]),
+            BISMARK_FILTER_NON_CONVERSION.out.report.ifEmpty([]),
             BISMARK_DEDUPLICATION.out.report.ifEmpty([]),
-            BISMARK_DEDUP1.out.report.ifEmpty([]),
-            BISMARK_DEDUP2.out.report.ifEmpty([]),
             BISMARK_METHYLATION_EXTRACTOR.out.report.ifEmpty([]),
             BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([]),
-            METHXTRACT_UN1.out.report.ifEmpty([]),
-            METHXTRACT_UN1.out.mbias.ifEmpty([]),
-            METHXTRACT_UN2.out.report.ifEmpty([]),
-            METHXTRACT_UN2.out.mbias.ifEmpty([]),
         ).collect()
 
+        // merging channels for Bismark reports
+        bismark_report_ch = BISMARK.out.bam.mix(
+            BISMARK.out.report,
+            BISMARK_FILTER_NON_CONVERSION.out.report.ifEmpty([]),
+            BISMARK_DEDUPLICATION.out.report.ifEmpty([]),
+            BISMARK_METHYLATION_EXTRACTOR.out.report.ifEmpty([]),
+            BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([]),
+        ).collect()
+
+        BISMARK2REPORT                   (bismark_report_ch, outdir, params.bismark2report_args, params.verbose)
+        BISMARK2SUMMARY                  (bismark_report_ch, outdir, params.bismark2summary_args, params.verbose)
         MULTIQC                          (multiqc_ch, outdir, params.multiqc_args, params.verbose)
 }
 
@@ -220,71 +151,48 @@ workflow.onComplete {
 }
 
 
-
 /* ========================================================================================
     HELP MESSAGE
 ======================================================================================== */
 def helpMessage() {
- 
+
     log.info"""
     >>
 
     SYNOPSIS:
 
-    This workflow runs an entire Bisulfite-seq processing pipeline on FastQ files, first for paired-end end file,
-    and then in single-end mode for unmapped files. This includes QC, quality-/adapter trimming, contamination QC (post-trimming), 
-    alignments to a genome using Bismark (see below), deduplication, methylation extraction, coverage file generation,
-    and finally generates aa aggregate MultiQC report.
-    The term ‘Dirty Harry’ was coined in ~2014 because it doesn’t seem to be the cleanest of methods:
-
-    (1) PE alignment to start, while grabbing the unmapped R1 and R2 reads out the end using the option ‘--unmapped’. 
-    Properly aligned PE reads should be methylation extracted using --no_overlap.
-    (2) unmapped R1 is then mapped SE
-    (3) unmapped R2 is then mapped SE (default mode, i.e. directional)
-    
-    Single-end aligned R1 and R2 can then be methylation extracted normally as they should in theory map to different places
-    in the genome anyway so don’t require attention to overlapping reads. Note that paired-end and single-end processing is
-    PE/SE specific until the methylation extraction stage. [CpG]* methylation calls of PE as well as both SE aligments are then
-    fed to a single bismark2bedGraph process to generate a single, merged coverage file (ends in "_DH.cov.gz").
-
-    Here is a graphical representation of the workflow:
+    This workflow runs an entire whole-genome shotgun bisulfite-seq (WGBS) processing pipeline on FastQ files. This
+    includes QC, quality-/adapter trimming, contamination QC (post-trimming), alignments to a genome using Bismark,
+    deduplication, filtering incomplete bisulfite conversion, methylation extraction, coverage file generation, and finally generates an aggregate MultiQC report.
+    The workflow is suitable for 'standard' bisulfite sequencing experiments. Here is a graphical representation of the
+    workflow:
 
     --- FastQC
     --- Trim Galore
         |
         --- FastQ Screen
         --- FastQC
-        --- Bismark (PE)
+        --- Bismark
             |
-            --- Bismark deduplication (PE)
+            --- Bismark filter non-conversion            
                 |
-                --- Bismark methylation extraction (PE) 
-            ---unmapped R1
-               |
-               ---Bismark deduplication (SE R1)
-                  |
-                  --- Bismark methylation extraction (SE R1) 
-            ---unmapped R2
-               |
-               --- Bismark deduplication (SE R2)
-                 |
-                 --- Bismark methylation extraction (SE R2) 
-        ---bismark2bedGraph (PE, SE R1, SE R2)
+                --- Bismark deduplication
+                --- Bismark methylation extraction
     --- bismark2report*
     --- bismark2summary*
     --- MultiQC*
-        
+
     * These steps run only once ALL other jobs have completed.
 
     By default, the involved tools are run in the following way:
     ------------------------------------------------------------
-    FastQC:                           defaults ('-q')
+    FastQC:                           defaults (-q)
     FastQ Screen:                     '--bisulfite'
-    Trim Galore:                      adapter auto-detection; '--paired'
-    Bismark:                          PE: '--unmapped', SE R1: defaults, SE R2: defaults
+    Trim Galore:                      defaults (adapter auto-detection)
+    Bismark:                          defaults
+    Bismark filter non-conversion:    defaults
     Bismark deduplication:            defaults
-    Bismark methylation extraction:   '--bedGraph --buffer 10G --parallel 4'
-    bismark2bedGraph                  'dirty_harry'
+    Bismark methylation extraction:   '--bedGraph --buffer 10G --parallel 4'; for PE files: '--ignore_r2 2'
 
     To add additional parameters to any of the programs, consider supplying tool-specific arguments (see --toolname_args="..." below).
 
@@ -293,9 +201,9 @@ def helpMessage() {
 
 
     USAGE:
-    
-    nf_bisulfite_DirtyHarry [options] --genome <genomeID> <input files>
-    
+
+    nf_bisulfite_WGBS [options] --genome <genomeID> <input files>
+
     Mandatory arguments:
     ====================
 
@@ -317,25 +225,31 @@ def helpMessage() {
       --fastqc_args="[str]"           This option can take any number of options that are compatible with FastQC to modify its default
                                       behaviour. For more detailed information on available options please refer to the FastQC documentation,
                                       or run 'fastqc --help' on the command line. As an example, to run FastQC without grouping of bases when
-                                      reads are >50bp and use a specific file with non-default adapter sequences, use: 
+                                      reads are >50bp and use a specific file with non-default adapter sequences, use:
                                       ' --fastqc_args="--nogroup --adapters ./non_default_adapter_file.txt" '. [Default: None]
 
       --fastq_screen_args="[str]"     This option can take any number of options that are compatible with FastQ Screen to modify its
                                       default behaviour. For more detailed information on available options please refer to the FastQ Screen
                                       documentation, or run 'fastq_screen --help' on the command line. For instance, to process a bisulfite
-                                      converted library with fairly relaxed parameters, you could use: 
+                                      converted library with fairly relaxed parameters, you could use:
                                       ' --fastq_screen_args="--bisulfite --score_min L,0,-0.6" '. [Default: None]
 
       --trim_galore_args="[str]"      This option can take any number of options that are compatible with Trim Galore to modify its
                                       default trimming behaviour. For more detailed information on available options please refer
                                       to the Trim Galore User Guide, or run 'trim_galore --help' on the command line. As an example, to trim
-                                      off the first 10bp from the 5' of R1 and 5bp of R2, use: 
+                                      off the first 10bp from the 5' of R1 and 5bp of R2, use:
                                       ' --trim_galore_args="--clip_r1 10 --clip_r2 5" '. [Default: None]
 
       --bismark_args="[str]"          This option can take any number of options that are compatible with Bismark to modify its
                                       default mapping behaviour. For more detailed information on available options please refer
                                       to the Bismark User Guide, or run 'bismark --help' on the comamnd line. As an example, to run somewhat
                                       relaxed alignments, use: ' --bismark_args="--score_min L,0,-0.4" '. [Default: None]
+
+      --filter_non_conversion_args="[str]"           This option can take any number of options that are compatible with filter_non_conversion
+                                      to modify its default filter non-conversion behaviour. For more detailed information on available options please
+                                      refer to the Bismark User Guide, or run 'filter_non_conversion --help'. As an example, if you want that 
+                                      non-CG methylation has be found on consecutive non-CGs, use: ' --filter_non_conversion_args="--consecutive" '.
+                                      [Default: None]
 
       --bismark_deduplication_args="[str]"           This option can take any number of options that are compatible with deduplicate_bismark
                                       to modify its default deduplication behaviour. For more detailed information on available options please
@@ -348,13 +262,6 @@ def helpMessage() {
                                       to run the extraction and coverage file generation for a genome containing thousands of scaffolds
                                       or contigs, use: ' --bismark_methylation_extractor_args="--gazillion" '. [Default: None]
 
-      --bismark2bedGraph_args="[str]" This option can take any number of options that are compatible with bismark2bedGraph to modify its
-                                      default behaviour. For more detailed information on available options please refer to the Bismark
-                                      User Guide, or run 'bismark2bedGraph --help' on the command line. As an example, to run the coverage file
-                                      generation for a genome containing thousands of scaffolds or contigs, use: 
-                                      ' --bismark2bedGraph_args="--gazillion" '. [Default: None]                           
-
-
     Other options:
     ==============
 
@@ -363,11 +270,10 @@ def helpMessage() {
       --list_genomes                  List all genome builds that are currently available to choose from. To see this list
                                       of available genomes with more detailed information about paths and indexes, run
                                       the command as '--list_genomes --verbose'
-    
+
       --single_end                    Force files of a read pair to be treated as single-end files. [Default: auto-detect]
-      
+
       --verbose                       More verbose status messages. [Default: OFF]
-      
       --help                          Displays this help message and exits.
 
 
@@ -387,8 +293,9 @@ def helpMessage() {
                                       pipeline will send you an email with the job details. This option is HIGHLY RECOMMENDED!
 
       -process.executor=local         Temporarily changes where the workflow is executed to the 'local' machine. See also Nextflow config
-                                      file for more details. [Default: slurm] 
-    
+                                      file for more details. [Default: slurm]
+
     <<
     """.stripIndent()
 }
+

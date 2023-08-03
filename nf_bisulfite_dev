@@ -30,27 +30,20 @@ params.add_filter_non_conversion = false
     PARAMETERS
 ======================================================================================== */
 params.pbat         = false
-params.pbat_no_clip = false
 params.rrbs         = false
 params.singlecell   = false
 params.nonCG        = false
 params.nome         = false
-params.scBSseq      = false
-params.scNMT        = false
+params.pbat_trim    = false
 
 // PBAT (Trim Galore --clip_R1 9 --clip_R2 9)
 if (params.pbat){
-    params.pbat = '9'
+    params.pbat_trim = '9'
 }
 
 // PBAT (without trimming)
 if (params.pbat_no_clip){
-    params.pbat = params.pbat_no_clip
-}
-
-// RRBS
-if (params.rrbs){
-    params.rrbs = params.rrbs
+    params.pbat = true
 }
 
 // scBSseq
@@ -135,11 +128,11 @@ file_ch = makeFilesChannel(args)
 include { FASTQC }                               from './nf_modules/fastqc.mod.nf'                         
 include { FASTQC as FASTQC2 }                    from './nf_modules/fastqc.mod.nf' 
 include { FASTQ_SCREEN }                         from './nf_modules/fastq_screen.mod.nf'                  params(bisulfite: '--bisulfite')
-include { TRIM_GALORE }                          from './nf_modules/trim_galore.mod.nf'                   params(                pbat: params.pbat, singlecell: params.singlecell,    rrbs: params.rrbs)
+include { TRIM_GALORE }                          from './nf_modules/trim_galore.mod.nf'                   params(pbat: params.pbat_trim, singlecell: params.singlecell,    rrbs: params.rrbs)
 include { BISMARK }                              from './nf_modules/bismark.mod.nf'                       params(genome: genome, pbat: params.pbat, singlecell: params.singlecell)
 include { BISMARK_FILTER_NON_CONVERSION }        from './nf_modules/bismark_filter_non_conversion.mod.nf'
 include { BISMARK_DEDUPLICATION }                from './nf_modules/bismark_deduplication.mod.nf'
-include { BISMARK_METHYLATION_EXTRACTOR }        from './nf_modules/bismark_methylation_extractor.mod.nf' params(                pbat: params.pbat, singlecell: params.singlecell,    rrbs: params.rrbs,     nonCG: params.nonCG)
+include { BISMARK_METHYLATION_EXTRACTOR }        from './nf_modules/bismark_methylation_extractor.mod.nf' params(pbat: params.pbat, singlecell: params.singlecell, rrbs: params.rrbs, nonCG: params.nonCG)
 include { COVERAGE2CYTOSINE }                    from './nf_modules/coverage2cytosine.mod.nf'             params(genome: genome, nome: params.nome)
 include { BISMARK2REPORT }                       from './nf_modules/bismark2report.mod.nf'
 include { BISMARK2SUMMARY }                      from './nf_modules/bismark2summary.mod.nf'
@@ -242,7 +235,6 @@ workflow {
                             BISMARK_METHYLATION_EXTRACTOR.out.report.ifEmpty([]),
                             BISMARK_METHYLATION_EXTRACTOR.out.mbias.ifEmpty([])
                             ).collect()      
-
             }   
 
         } else { 
@@ -278,7 +270,6 @@ workflow {
                             ).collect()                  
                 
             }
-
         }
 
         // with coverage2cytosine

@@ -12,7 +12,7 @@ params.bam_output = true // Setting if the bam file should be published
 /* ========================================================================================
     PROCESSES
 ======================================================================================== */
-process SAMTOOLS_SORT{	
+process SAMTOOLS_SORT {	
     
 	label 'samtools'
 	tag "$bam" // Adds name to job submission
@@ -54,7 +54,7 @@ process SAMTOOLS_SORT{
 
 
 
-process SAMTOOLS_INDEX{	
+process SAMTOOLS_INDEX {	
     
 	label 'samtools'
 	tag "$bam" // Adds name to job submission

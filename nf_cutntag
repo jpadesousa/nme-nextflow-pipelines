@@ -101,7 +101,7 @@ include { BOWTIE2 }            from './nf_modules/bowtie2.mod.nf'  params(bam_ou
 include { SAMTOOLS_SORT }      from './nf_modules/samtools.mod.nf' params(bam_output: params.bam_output)
 include { SAMTOOLS_INDEX }     from './nf_modules/samtools.mod.nf' params(bam_output: params.bam_output)
 include { MARK_DUPLICATES }    from './nf_modules/picard.mod.nf'   params(bam_output: params.bam_output)
-include { BEDTOOLS_GENOMECOV } from './nf_modules/bedtools.mod.nf' params(genome: genome, cutntag: true)
+include { BEDTOOLS_GENOMECOV } from './nf_modules/bedtools.mod.nf' params(cutntag: true)
 include { MULTIQC }            from './nf_modules/multiqc.mod.nf'
 
 workflow {

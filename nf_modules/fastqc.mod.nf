@@ -5,7 +5,7 @@ nextflow.enable.dsl=2
 /* ========================================================================================
     DEFAULT PARAMETERS
 ======================================================================================== */
-params.verbose    = true
+params.verbose = true
 
 
 /* ========================================================================================
@@ -36,9 +36,9 @@ process FASTQC {
 			println ("[MODULE] FASTQC ARGS: " + fastqc_args)
 		}
 
-
 		"""
 		module load fastqc
+
 		fastqc $fastqc_args -q -t 2 ${reads}
 		"""
 }

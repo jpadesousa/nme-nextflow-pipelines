@@ -38,7 +38,7 @@ def getGenome(name) {
 
 
 
-def listGenomes(){
+def listGenomes() {
 
     println ("These genomes are currently available to choose from:")
     println ("=====================================================")
