@@ -128,7 +128,7 @@ file_ch = makeFilesChannel(args)
 include { FASTQC }                               from './nf_modules/fastqc.mod.nf'                         
 include { FASTQC as FASTQC2 }                    from './nf_modules/fastqc.mod.nf' 
 include { FASTQ_SCREEN }                         from './nf_modules/fastq_screen.mod.nf'                  params(bisulfite: '--bisulfite')
-include { TRIM_GALORE }                          from './nf_modules/trim_galore.mod.nf'                   params(pbat: params.pbat_trim, singlecell: params.singlecell,    rrbs: params.rrbs)
+include { TRIM_GALORE }                          from './nf_modules/trim_galore.mod.nf'                   params(pbat: params.pbat_trim, singlecell: params.singlecell, rrbs: params.rrbs)
 include { BISMARK }                              from './nf_modules/bismark.mod.nf'                       params(genome: genome, pbat: params.pbat, singlecell: params.singlecell)
 include { BISMARK_FILTER_NON_CONVERSION }        from './nf_modules/bismark_filter_non_conversion.mod.nf'
 include { BISMARK_DEDUPLICATION }                from './nf_modules/bismark_deduplication.mod.nf'
@@ -141,10 +141,12 @@ include { MULTIQC }                              from './nf_modules/multiqc.mod.
 workflow {
 
     main:
-        if (!params.skip_qc){ // QC conditional
+        // QC conditional
+        if (!params.skip_qc){ 
             FASTQC                          (file_ch, outdir, params.fastqc_args, params.verbose)
             TRIM_GALORE                     (file_ch, outdir, params.trim_galore_args, params.verbose)
-            if (!params.skip_fastq_screen){ // FastQ Screen conditional
+            // FastQ Screen conditional
+            if (!params.skip_fastq_screen){ 
             FASTQ_SCREEN                    (TRIM_GALORE.out.reads, outdir, params.fastq_screen_args, params.verbose)
             }
             FASTQC2                         (TRIM_GALORE.out.reads, outdir, params.fastqc_args, params.verbose)
@@ -153,9 +155,11 @@ workflow {
             BISMARK                         (file_ch, outdir, params.bismark_args, params.verbose)
         }
 
-        if (!params.skip_deduplication){ // Deduplication conditional
+        // Deduplication conditional
+        if (!params.skip_deduplication){ 
         
-                if (params.add_filter_non_conversion){ // Filter non-conversion conditional
+                // Filter non-conversion conditional
+                if (params.add_filter_non_conversion){ 
                     BISMARK_FILTER_NON_CONVERSION   (BISMARK.out.bam, outdir, params.filter_non_conversion_args, params.verbose)
                     BISMARK_DEDUPLICATION           (BISMARK_FILTER_NON_CONVERSION.out.bam, outdir, params.deduplicate_bismark_args, params.verbose)
                     BISMARK_METHYLATION_EXTRACTOR   (BISMARK_DEDUPLICATION.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
@@ -164,7 +168,8 @@ workflow {
                     BISMARK_METHYLATION_EXTRACTOR   (BISMARK_DEDUPLICATION.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
                 }
         } else {
-                if (params.add_filter_non_conversion){ // Filter non-conversion conditional
+                // Filter non-conversion conditional
+                if (params.add_filter_non_conversion){ 
                     BISMARK_FILTER_NON_CONVERSION   (BISMARK.out.bam, outdir, params.filter_non_conversion_args, params.verbose)
                     BISMARK_METHYLATION_EXTRACTOR   (BISMARK_FILTER_NON_CONVERSION.out.bam, outdir, params.bismark_methylation_extractor_args, params.verbose)
                 } else {
@@ -172,7 +177,8 @@ workflow {
                 }
         }
 
-        if (params.scNMT){ // scNME conditional
+        // scNME conditional
+        if (params.scNMT){ 
             COVERAGE2CYTOSINE             (BISMARK_METHYLATION_EXTRACTOR.out.coverage, outdir, params.coverage2cytosine_args, params.verbose)
         }
 
@@ -288,9 +294,9 @@ workflow {
         /* ========================================================================================
         ======================================================================================== */
 
-        BISMARK2REPORT                   (bismark_report_ch, outdir, params.bismark2report_args, params.verbose)
-        BISMARK2SUMMARY                  (bismark_report_ch, outdir, params.bismark2summary_args, params.verbose)
-        MULTIQC                          (multiqc_ch, outdir, params.multiqc_args, params.verbose)
+        BISMARK2REPORT      (bismark_report_ch, outdir, params.bismark2report_args, params.verbose)
+        BISMARK2SUMMARY     (bismark_report_ch, outdir, params.bismark2summary_args, params.verbose)
+        MULTIQC             (multiqc_ch, outdir, params.multiqc_args, params.verbose)
 }
 
 workflow.onComplete {
