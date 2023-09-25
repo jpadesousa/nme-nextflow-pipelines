@@ -13,9 +13,6 @@ def makeFilesChannel(fileList) {
 
 }
 
-
-
-
 def getFileBaseNames(fileList) {
 
     baseNames = [:]
