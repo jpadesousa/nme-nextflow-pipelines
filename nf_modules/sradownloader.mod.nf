@@ -25,7 +25,7 @@ process SRADOWNLOADER {
 
 	output:
 	  	path "*gz", emit: fastq
-		publishDir "$outputdir/fastq", mode: "link", overwrite: true
+		publishDir "$outputdir/fastq", mode: "copy", overwrite: true
 
 	script:
 
@@ -37,8 +37,8 @@ process SRADOWNLOADER {
 		}
 
 		"""
-		module load sradownloader
+		module load sradownloader/3.8
 
-		sradownloader ${sradownloader_args} --noena ${sra_metadata} 
+		sradownloader_axel ${sradownloader_args} ${sra_metadata} 
 		"""
 }

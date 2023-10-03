@@ -6,7 +6,7 @@ nextflow.enable.dsl=2
     DEFAULT PARAMETERS
 ======================================================================================== */
 params.verbose  = true
-params.metadata = false
+params.just_metadata = false
 
 
 /* ========================================================================================
@@ -37,7 +37,7 @@ process GEOFETCH {
 			println ("[MODULE] GEOFETCH ARGS: " + geofetch_args)
 		}
 
-        if (params.metadata){
+        if (params.just_metadata){
             geofetch_args += " --just-metadata "
 		}
 
